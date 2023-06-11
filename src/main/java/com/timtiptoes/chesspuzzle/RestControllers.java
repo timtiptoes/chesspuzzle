@@ -25,7 +25,7 @@ public class RestControllers {
     }
 
 
-    @RequestMapping(value = "/sid", method = RequestMethod.GET,
+    @RequestMapping(value = "/key", method = RequestMethod.GET,
             produces = MediaType.IMAGE_PNG_VALUE)
     public void getImage(HttpServletResponse response) throws IOException {
 
