@@ -2,13 +2,18 @@ package com.timtiptoes.chesspuzzle;
 
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.var;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 
 @RestController
@@ -17,6 +22,17 @@ public class RestControllers {
     public String helloWorld(@PathVariable(value = "name") String name) {
         return "Hello World," + name + " from Spring Boot";
 
+    }
+
+
+    @RequestMapping(value = "/sid", method = RequestMethod.GET,
+            produces = MediaType.IMAGE_PNG_VALUE)
+    public void getImage(HttpServletResponse response) throws IOException {
+
+        var imgFile = new ClassPathResource("static/board_key.png");
+
+        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        StreamUtils.copy(imgFile.getInputStream(), response.getOutputStream());
     }
 
     @RequestMapping(value = "/lastmove/{lastMove}", method = RequestMethod.GET)

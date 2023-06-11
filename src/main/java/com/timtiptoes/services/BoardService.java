@@ -47,7 +47,6 @@ public class BoardService {
 public static String lookup_letter(String coordinate){
         int x = (int) coordinate.charAt(0) - 97;
         int y = 7 - (Integer.parseInt(String.valueOf(coordinate.charAt(1)))-1);
-        System.out.println("Found "+x+","+y);
         int letter_index = (x + 8*y)  % 26;
         char letter = (char) (letter_index+97);
         return String.valueOf(letter);
@@ -60,8 +59,8 @@ public static String lookup_letter(String coordinate){
         //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter("/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff/doit.sh"));
-            writer.write(String.format("docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest %s",fen));
+            writer = new BufferedWriter(new FileWriter("/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render/doit.sh"));
+            writer.write(String.format("docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render:/tmp chess:latest %s",fen));
             writer.close();
 
         } catch (IOException e) {
@@ -69,7 +68,7 @@ public static String lookup_letter(String coordinate){
         }
 
 
-        String command="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff/doit.sh";
+        String command="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render/doit.sh";
 
 
         try {
