@@ -60,7 +60,7 @@ public class RestControllers {
         String lastMove;
         ArrayList<String> outputDoc = new ArrayList<String>();
 
-
+    //TODO is this bad not use autowired?
         String clue = rawClue.replace(" ", "").toLowerCase();
         StorageService storageService = new StorageService();
         BoardService boardService = new BoardService();
