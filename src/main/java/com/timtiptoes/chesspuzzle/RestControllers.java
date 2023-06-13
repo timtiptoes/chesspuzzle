@@ -35,26 +35,26 @@ public class RestControllers {
         StreamUtils.copy(imgFile.getInputStream(), response.getOutputStream());
     }
 
-    @RequestMapping(value = "/lastmove/{lastMove}", method = RequestMethod.GET)
-    public String getLastMove(@PathVariable(value = "lastMove") String lastMove) {
+    @RequestMapping(value = "/lastmove/{mateNum}/{lastMove}", method = RequestMethod.GET)
+    public String getLastMove(@PathVariable int mateNum, String lastMove) {
         StorageService storageService = new StorageService();
 
-        return storageService.query(lastMove);
+        return storageService.query(mateNum,lastMove);
 
     }
 
-    @RequestMapping(value = "/drawit/{lastMove}", method = RequestMethod.GET)
-    public String drawIt(@PathVariable(value = "lastMove") String lastMove) {
+    @RequestMapping(value = "/drawit/{mateNum}/{lastMove}", method = RequestMethod.GET)
+    public String drawIt(@PathVariable int mateNum,String lastMove) {
         StorageService storageService = new StorageService();
 
-        String FEN = storageService.query(lastMove);
+        String FEN = storageService.query(mateNum,lastMove);
         BoardService boardService = new BoardService();
         return boardService.drawBoard(FEN);
 
     }
 
-    @RequestMapping(value = "/make/{rawClue}", method = RequestMethod.GET)
-    public String make(@PathVariable(value = "rawClue") String rawClue) {
+    @RequestMapping(value = "/make/{mateNum}/{rawClue}", method = RequestMethod.GET)
+    public String make(@PathVariable int mateNum, String rawClue) {
         String FEN = "";
         String letter;
         String lastMove;
@@ -69,7 +69,7 @@ public class RestControllers {
         for (int i = 0; i < clue.length(); i++) {
             letter = String.valueOf(clue.charAt(i));
             lastMove = boardService.getCoordinate(letter);
-            FEN = storageService.query(lastMove);
+            FEN = storageService.query(mateNum,lastMove);
             if (i % 4 == 0) {
                 outputStr.append("<tr>");
             }

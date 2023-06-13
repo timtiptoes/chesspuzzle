@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 public class StorageService {
 
-    private static final Logger log = LoggerFactory.getLogger(RestControllers.class);
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private Connection connect() {
         // SQLite connection string
@@ -33,7 +33,7 @@ public class StorageService {
         return conn;
     }
 
-    public String query(String lastMove) {
+    public String query(int mateNum,String lastMove) {
 
         StringBuilder str = new StringBuilder();
 /*        CREATE TABLE mateIn (
@@ -52,9 +52,9 @@ public class StorageService {
         try {
             Connection conn = this.connect();
             Statement pstmt = conn.createStatement();
+            //String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn"+Integer.valueOf(mateNum)+"') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
             String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn1') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
-
-            log.debug(String.format("About to execute:%s", sql));
+            log.info(String.format("boingo About to execute:%s", sql));
 
             ResultSet rs = pstmt.executeQuery(sql);
             while (rs.next()) {
