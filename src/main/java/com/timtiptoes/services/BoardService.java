@@ -1,5 +1,8 @@
 package com.timtiptoes.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.script.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -9,6 +12,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class BoardService {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     Map<String, List<String>> letterMap =new HashMap<String,List<String>>();
 
@@ -56,8 +61,8 @@ public static String lookup_letter(String coordinate){
     public String drawBoard(String fen) {
         StringBuilder str = new StringBuilder();
 
-        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
-        //String render_path="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render";
+        //String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
+        String render_path="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render";
         //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
         BufferedWriter writer = null;
         try {
@@ -72,7 +77,7 @@ public static String lookup_letter(String coordinate){
 
         String command=render_path+"/doit.sh";
 
-
+        log.info("in drawBoard and about to execute "+command);
         try {
             Process process = Runtime.getRuntime().exec(command);
 

@@ -21,8 +21,8 @@ public class StorageService {
 
     private Connection connect() {
         // SQLite connection string
-//        String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
-        String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
+        String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
+//        String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
 
         Connection conn = null;
         try {
@@ -53,7 +53,7 @@ public class StorageService {
             Connection conn = this.connect();
             Statement pstmt = conn.createStatement();
             //String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn"+Integer.valueOf(mateNum)+"') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
-            String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn1') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
+            String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + " AND INSTR(Themes,'mateIn1') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
             log.info(String.format("boingo About to execute:%s", sql));
 
             ResultSet rs = pstmt.executeQuery(sql);
