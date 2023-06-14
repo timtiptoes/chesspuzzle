@@ -2,19 +2,19 @@ package com.timtiptoes.chesspuzzle;
 
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
+import com.timtiptoes.models.*;
 import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 /*
@@ -47,12 +47,22 @@ public class RestControllers {
         StreamUtils.copy(imgFile.getInputStream(), response.getOutputStream());
     }
 
+
     @RequestMapping(value = "/lastmove/{mateNum}/{lastMove}", method = RequestMethod.GET)
-    public String getLastMove(@PathVariable int mateNum, @PathVariable String lastMove) {
+   // public String getLastMove(@PathVariable int mateNum, @PathVariable String lastMove) {
+    ResponseEntity<String> getLastMove(@Valid @RequestBody Input input){
+        int mateNum=input.getMateNum();
+        String lastMove=input.getLastmove();
         StorageService storageService = new StorageService();
         log.info(String.format("This is lastmove and I got mateNum:%s and lastMove:%s",mateNum,lastMove));
 
         return storageService.query(mateNum,lastMove);
+
+
+        @PostMapping("/validateBody")
+        ResponseEntity<String> validateBody(@Valid @RequestBody Input input) {
+            return ResponseEntity.ok("valid");
+        }
 
     }
 
