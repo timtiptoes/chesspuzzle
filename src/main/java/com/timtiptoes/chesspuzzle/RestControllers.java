@@ -2,19 +2,25 @@ package com.timtiptoes.chesspuzzle;
 
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
-import com.timtiptoes.models.*;
 import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
+import javax.validation.ConstraintViolationException;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 /*
@@ -27,6 +33,7 @@ remove sudo in docker run
 
  */
 @RestController
+@Validated
 public class RestControllers {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -47,27 +54,17 @@ public class RestControllers {
         StreamUtils.copy(imgFile.getInputStream(), response.getOutputStream());
     }
 
-
     @RequestMapping(value = "/lastmove/{mateNum}/{lastMove}", method = RequestMethod.GET)
-   // public String getLastMove(@PathVariable int mateNum, @PathVariable String lastMove) {
-    ResponseEntity<String> getLastMove(@Valid @RequestBody Input input){
-        int mateNum=input.getMateNum();
-        String lastMove=input.getLastmove();
+    public String getLastMove(@PathVariable @Min(1) @Max(5) int mateNum, @PathVariable @Pattern(regexp = "^[a-h][1-8]$") String lastMove) {
         StorageService storageService = new StorageService();
         log.info(String.format("This is lastmove and I got mateNum:%s and lastMove:%s",mateNum,lastMove));
 
         return storageService.query(mateNum,lastMove);
 
-
-        @PostMapping("/validateBody")
-        ResponseEntity<String> validateBody(@Valid @RequestBody Input input) {
-            return ResponseEntity.ok("valid");
-        }
-
     }
 
     @RequestMapping(value = "/drawit/{mateNum}/{lastMove}", method = RequestMethod.GET)
-    public String drawIt(@PathVariable int mateNum,@PathVariable String lastMove) {
+    public String drawIt(@PathVariable @Min(1) @Max(5) int mateNum, @PathVariable @Pattern(regexp = "^[a-h][1-8]$") String lastMove) {
 
         log.info(String.format("This is drawit and I got mateNum:%s and lastMove:%s",mateNum,lastMove));
 
@@ -80,7 +77,7 @@ public class RestControllers {
     }
 
     @RequestMapping(value = "/make/{mateNum}/{rawClue}", method = RequestMethod.GET)
-    public String make(@PathVariable int mateNum, @PathVariable String rawClue) {
+    public String make(@PathVariable @Min(1) @Max(5)  int mateNum, @Pattern(regexp = "^[a-z]+$") @PathVariable String rawClue) {
 
         log.info(String.format("This is make and I got mateNum:%s and lastMove:%s",mateNum,rawClue));
 
@@ -113,5 +110,10 @@ public class RestControllers {
         outputStr.append("</TABLE></BODY></HTML>");
         return outputStr.toString();
 
+    }
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        return new ResponseEntity<>("not valid due to validation error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
