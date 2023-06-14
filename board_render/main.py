@@ -4,10 +4,14 @@ import sys
 
 fen=sys.argv[1]
 moves=sys.argv[2]
+game_url=sys.argv[3]
+mateNum=sys.argv[4]
 first_move=moves.split(' ')[0]
 whose_move='white' if fen.split(" ")[1]=='b' else 'black'
 
-move_string=f'<p style="margin-left: 70px;">mate in 1, {whose_move} to move</p>'
+move_string=f'<p style="margin-left: 70px;">mate in {mateNum}, {whose_move} to move</p>'
+#move_string=f'<p style="margin-left: 70px;">mate in {mateNum}, {whose_move} to move {game_url}</p>'
+
 
 #docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest
 board = chess.Board(fen)

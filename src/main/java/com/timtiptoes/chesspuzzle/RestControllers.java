@@ -17,7 +17,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+/*
+Tim! There are three things you have to change when switching environments
+path in storage service
+path in board service
+remove sudo in docker run
 
+
+
+ */
 @RestController
 public class RestControllers {
     private final Logger log = LoggerFactory.getLogger(this.getClass());

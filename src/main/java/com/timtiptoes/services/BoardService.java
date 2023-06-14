@@ -67,7 +67,8 @@ public static String lookup_letter(String coordinate){
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
-            writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s",fen));
+//            writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s",fen));
+            writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest %s",fen));
             writer.close();
 
         } catch (IOException e) {
