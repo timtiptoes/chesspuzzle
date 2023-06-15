@@ -1,5 +1,6 @@
 package com.timtiptoes.chesspuzzle;
 
+import com.timtiptoes.helpers.SheetHelper;
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
 import lombok.var;
@@ -72,12 +73,12 @@ public class RestControllers {
 
         String FEN = storageService.query(mateNum,lastMove);
         BoardService boardService = new BoardService();
-        return boardService.drawBoard(FEN);
+        return boardService.drawBoard(FEN,0);
 
     }
 
     @RequestMapping(value = "/make/{mateNum}/{rawClue}", method = RequestMethod.GET)
-    public String make(@PathVariable @Min(1) @Max(5)  int mateNum, @Pattern(regexp = "^[a-z]+$") @PathVariable String rawClue) {
+    public String make(@PathVariable @Min(1) @Max(5)  int mateNum, @Pattern(regexp = "^[a-z]{1,21}$") @PathVariable String rawClue) {
 
         log.info(String.format("This is make and I got mateNum:%s and lastMove:%s",mateNum,rawClue));
 
@@ -90,7 +91,7 @@ public class RestControllers {
         String clue = rawClue.replace(" ", "").toLowerCase();
         StorageService storageService = new StorageService();
         BoardService boardService = new BoardService();
-        StringBuilder outputStr = new StringBuilder("<HTML><BODY><TABLE>");
+        StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(),clue.length());
 
         for (int i = 0; i < clue.length(); i++) {
             letter = String.valueOf(clue.charAt(i));
@@ -101,7 +102,7 @@ public class RestControllers {
             }
             outputStr.append("<th>");
 
-            outputStr.append(boardService.drawBoard(FEN));
+            outputStr.append(boardService.drawBoard(FEN,i+1));
             outputStr.append("</th>");
             if (i % 4 == 3) {
                 outputStr.append("</tr>");
