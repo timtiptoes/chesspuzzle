@@ -92,11 +92,11 @@ public class RestControllers {
         String clue = rawClue.replace(" ", "").toLowerCase();
         StorageService storageService = new StorageService();
         BoardService boardService = new BoardService();
-        StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(),clue.length());
 
         if (clue.equals("random")){
             clue=storageService.randomWord();
         }
+        StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(),clue.length());
 
 
             for (int i = 0; i < clue.length(); i++) {

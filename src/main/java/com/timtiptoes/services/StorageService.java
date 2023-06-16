@@ -52,7 +52,7 @@ public class StorageService {
         try {
             Connection conn = this.connect();
             Statement pstmt = conn.createStatement();
-            String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) || ' ' || quote(GameUrl) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn"+Integer.valueOf(mateNum)+"') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
+            String sql = String.format("SELECT quote(FEN) || ' ' || quote(moves) || ' ' || quote(PuzzleId) as FEN FROM mateIn WHERE lastMove = '%s'",lastMove) + "AND INSTR(Themes,'mateIn"+Integer.valueOf(mateNum)+"') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
             log.info(String.format("About to execute:%s", sql));
 
             ResultSet rs = pstmt.executeQuery(sql);
