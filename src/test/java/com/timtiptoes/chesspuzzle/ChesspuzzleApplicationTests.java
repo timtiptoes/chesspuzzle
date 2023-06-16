@@ -1,5 +1,7 @@
 package com.timtiptoes.chesspuzzle;
 
+import com.timtiptoes.services.BoardService;
+import com.timtiptoes.services.StorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -25,7 +27,7 @@ class ChesspuzzleApplicationTests {
 
 
 
-@Test
+//@Test
 	public void runfromOS(){
 	String command = "/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/test/python/doit.sh";
 
@@ -56,6 +58,13 @@ class ChesspuzzleApplicationTests {
 	} catch (IOException e) {
 		e.printStackTrace();
 	}
+}
+
+@Test
+	public void getWordTest(){
+	StorageService storageService = new StorageService();
+	String word = storageService.randomWord();
+	System.out.println("Random word:"+word);
 }
 
 }

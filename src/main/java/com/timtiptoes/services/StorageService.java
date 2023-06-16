@@ -21,8 +21,8 @@ public class StorageService {
 
     private Connection connect() {
         // SQLite connection string
-//         String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
-        String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
+         String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
+//        String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
 
         Connection conn = null;
         try {
@@ -70,5 +70,29 @@ public class StorageService {
 
     }
 
+    public String randomWord() {
+
+        StringBuilder str = new StringBuilder();
+
+        try {
+            Connection conn = this.connect();
+            Statement pstmt = conn.createStatement();
+            String sql = "SELECT word as word FROM words  WHERE  rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM words)) LIMIT 1;";
+            log.info(String.format("About to find word with:%s", sql));
+            System.out.println(String.format("About to find word with:%s", sql));
+
+            ResultSet rs = pstmt.executeQuery(sql);
+            while (rs.next()) {
+                str.append(rs.getObject("word"));
+
+            }
+        }
+        catch (Exception e) {
+            log.debug(e.toString());
+            return e.toString();
+        }
+        return str.toString();
+
+    }
 
 }

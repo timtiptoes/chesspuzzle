@@ -87,13 +87,19 @@ public class RestControllers {
         String lastMove;
         ArrayList<String> outputDoc = new ArrayList<String>();
 
+
     //TODO is this bad not use autowired?
         String clue = rawClue.replace(" ", "").toLowerCase();
         StorageService storageService = new StorageService();
         BoardService boardService = new BoardService();
         StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(),clue.length());
 
-        for (int i = 0; i < clue.length(); i++) {
+        if (clue.equals("random")){
+            clue=storageService.randomWord();
+        }
+
+
+            for (int i = 0; i < clue.length(); i++) {
             letter = String.valueOf(clue.charAt(i));
             lastMove = boardService.getCoordinate(letter);
             FEN = storageService.query(mateNum,lastMove);
