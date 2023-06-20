@@ -99,8 +99,8 @@ public class RestControllers {
         StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(),clue.length());
 
 
-            for (int i = 0; i < clue.length(); i++) {
-            letter = String.valueOf(clue.charAt(i));
+            for (int i = 1; i <= clue.length(); i++) {
+            letter = String.valueOf(clue.charAt(i-1));
             lastMove = boardService.getCoordinate(letter);
             FEN = storageService.query(mateNum,lastMove);
             if (i % 4 == 0) {
@@ -108,7 +108,7 @@ public class RestControllers {
             }
             outputStr.append("<th>");
 
-            outputStr.append(boardService.drawBoard(FEN,i+1));
+            outputStr.append(boardService.drawBoard(FEN,i));
             outputStr.append("</th>");
             if (i % 4 == 3) {
                 outputStr.append("</tr>");

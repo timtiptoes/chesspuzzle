@@ -31,6 +31,8 @@ public class SheetHelper {
             stringBuilder.append(String.format("&nbsp&nbsp&nbsp<div class=\"number\">&nbsp&nbsp%s&nbsp&nbsp</div>",i+1));
         }
         stringBuilder.append("<TABLE>");
+        stringBuilder.append("<TR><TH>");
+        stringBuilder.append("<br><br><br><br><br><br><br><img src=\"http://73.162.98.176:8081/board_key.png\" alt=\"chess key\" width=\"350\" height=\"350\">");
         return stringBuilder;
     }
 }

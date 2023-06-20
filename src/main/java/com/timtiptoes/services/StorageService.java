@@ -21,8 +21,8 @@ public class StorageService {
 
     private Connection connect() {
         // SQLite connection string
-         String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
-//        String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
+//         String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
+       String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
 
         Connection conn = null;
         try {

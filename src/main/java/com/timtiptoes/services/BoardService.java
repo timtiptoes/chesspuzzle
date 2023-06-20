@@ -61,14 +61,14 @@ public static String lookup_letter(String coordinate){
     public String drawBoard(String fen,int puzzleNum) {
         StringBuilder str = new StringBuilder();
 
-//        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
-        String render_path="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render";
+        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
+//        String render_path="/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render";
         //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
-    //        writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
-            writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
+            writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
+    //        writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
             writer.close();
 
         } catch (IOException e) {
