@@ -20,9 +20,9 @@ public class StorageService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private Connection connect() {
-        // SQLite connection string
-//         String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
-       String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
+ //       // SQLite connection string
+        String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
+ //      String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chess_puzzle/src/main/resources/static/lichessDB.db";
 
         Connection conn = null;
         try {
@@ -77,7 +77,7 @@ public class StorageService {
         try {
             Connection conn = this.connect();
             Statement pstmt = conn.createStatement();
-            String sql = "SELECT word as word FROM words  WHERE  rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM words)) LIMIT 1;";
+            String sql = "SELECT word as word FROM words  WHERE   length(word) > 6 and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM words)) LIMIT 1;";
             log.info(String.format("About to find word with:%s", sql));
             System.out.println(String.format("About to find word with:%s", sql));
 

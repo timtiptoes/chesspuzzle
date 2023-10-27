@@ -25,12 +25,24 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 /*
-Tim! There are three things you have to change when switching environments
+Tim! 
+
+First you have to make sure there's a chesspuzzle:latest docker image available. So cd into board_render and go
+	docker build -t chess:latest .
+
+test that it works with
+	docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render:/tmp chess:latest '1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25' 'b7c6 e3a7 b8a8 d5b6' 'tJ48p' 2 5
+
+There are three things you have to change when switching environments
 path in storage service
 path in board service
-remove sudo in docker run
+remove sudo in docker run also in board service
 
+To build
+	./gradlew bootJar
 
+Visit
+	http://localhost:8081/make/2/random
 
  */
 @RestController
