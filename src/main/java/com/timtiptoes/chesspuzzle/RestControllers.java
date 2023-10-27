@@ -28,6 +28,7 @@ import java.util.ArrayList;
 Tim! 
 
 First you have to make sure there's a chesspuzzle:latest docker image available. So cd into board_render and go
+	cd board_render
 	docker build -t chess:latest .
 
 test that it works with

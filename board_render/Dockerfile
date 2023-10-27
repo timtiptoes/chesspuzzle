@@ -10,5 +10,4 @@ RUN pip3 --no-cache-dir install chess
 
 WORKDIR /tmp
 USER root
-#ENTRYPOINT ["print('caterwaul')"]
 ENTRYPOINT ["python3","/tmp/main.py"]
