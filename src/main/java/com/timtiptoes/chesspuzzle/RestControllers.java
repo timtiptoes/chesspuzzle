@@ -34,8 +34,11 @@ First you have to make sure there's a chesspuzzle:latest docker image available.
 	cd board_render
 	docker build -t chess:latest .
 
-test that it works with
+test that it works on mac with
 	docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render:/tmp chess:latest '1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25' 'b7c6 e3a7 b8a8 d5b6' 'tJ48p' 2 5
+
+test that it works on tx2 with
+	docker run --rm -v /media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render:/tmp chess:latest '[{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5}]'
 
 There are three things you have to change when switching environments
 path in storage service
@@ -68,6 +71,8 @@ To deploy to tx2
 		tmux att -t 0
 		cd /media/tim/JetsonSSD-5001/git_repos/chesspuzzle/board_render
 		docker build -t chess:latest .
+		touch board_render/doit.sh
+		chmod 777 board_render/doit.sh
 		java -jar chesspuzzle-0.0.1-SNAPSHOT.jar
 		cd ..
 	
