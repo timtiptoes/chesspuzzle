@@ -104,8 +104,6 @@ public class RestControllers {
 		String FEN = "";
 		String letter;
 		String lastMove;
-		StringBuilder outputStr;
-		ArrayList<String> outputDoc = new ArrayList<String>();
 		JSONObject jsonObject = new JSONObject();
 		JSONArray jsonList = new JSONArray();
 
@@ -128,8 +126,7 @@ public class RestControllers {
 			jsonList.put(jsonObject);
 		}
 
-		outputStr.append(boardService.drawBoard(jsonList));
-		return outputStr.toString();
+		return boardService.drawBoard(jsonList);
 
 	}
 
