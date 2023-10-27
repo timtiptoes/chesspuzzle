@@ -12,67 +12,65 @@ import java.util.Map;
 import java.util.Random;
 import org.json.JSONArray;
 
-
 public class BoardService {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    Map<String, List<String>> letterMap =new HashMap<String,List<String>>();
+	Map<String, List<String>> letterMap = new HashMap<String, List<String>>();
 
-    public Map<String, List<String>> getLetterMap() {
-        return letterMap;
-    }
+	public Map<String, List<String>> getLetterMap() {
+		return letterMap;
+	}
 
-    public BoardService(){
+	public BoardService() {
 
-            //Initialize map
-            for (int letterCode = 97; letterCode < 123; letterCode++) {
-                char letter= (char) letterCode;
-                letterMap.put(String.valueOf(letter),new ArrayList<String>());
-            }
-            //Populate map
-            for (int letterCode = 97; letterCode < 105; letterCode++) {
-                char letter= (char) letterCode;
-                for (int row = 0; row < 8; row++) {
-                    String coordinate = String.valueOf(letter) + (row+1);
-                    String lookedUpLetter = BoardService.lookup_letter(coordinate);
-                    letterMap.get(lookedUpLetter).add(coordinate);
+		// Initialize map
+		for (int letterCode = 97; letterCode < 123; letterCode++) {
+			char letter = (char) letterCode;
+			letterMap.put(String.valueOf(letter), new ArrayList<String>());
+		}
+		// Populate map
+		for (int letterCode = 97; letterCode < 105; letterCode++) {
+			char letter = (char) letterCode;
+			for (int row = 0; row < 8; row++) {
+				String coordinate = String.valueOf(letter) + (row + 1);
+				String lookedUpLetter = BoardService.lookup_letter(coordinate);
+				letterMap.get(lookedUpLetter).add(coordinate);
 
-                }
-            }
+			}
+		}
 
-        }
+	}
 
-    public String getCoordinate(String letter) {
-        List letterList = letterMap.get(letter);
-        Random rand = new Random();
-        String coordinate = (String) letterList.get(rand.nextInt(letterList.size()));
-        return coordinate;
-    }
+	public String getCoordinate(String letter) {
+		List letterList = letterMap.get(letter);
+		Random rand = new Random();
+		String coordinate = (String) letterList.get(rand.nextInt(letterList.size()));
+		return coordinate;
+	}
 
+	public static String lookup_letter(String coordinate) {
+		int x = (int) coordinate.charAt(0) - 97;
+		int y = 7 - (Integer.parseInt(String.valueOf(coordinate.charAt(1))) - 1);
+		int letter_index = (x + 8 * y) % 26;
+		char letter = (char) (letter_index + 97);
+		return String.valueOf(letter);
 
-public static String lookup_letter(String coordinate){
-        int x = (int) coordinate.charAt(0) - 97;
-        int y = 7 - (Integer.parseInt(String.valueOf(coordinate.charAt(1)))-1);
-        int letter_index = (x + 8*y)  % 26;
-        char letter = (char) (letter_index+97);
-        return String.valueOf(letter);
+	}
 
-}
-
-    public String drawBoard(JSONArray jsonList) {
+	public String drawBoard(JSONArray jsonList) {
         StringBuilder str = new StringBuilder();
 
-//        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
-        String render_path="/Users/206660287/Documents/personal/chesspuzzle/board_render";
+        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
+        //String render_path="/Users/206660287/Documents/personal/chesspuzzle/board_render";
         //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
             //sudo is for tx2
-  //        writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
-          writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
-            writer.close();
+          writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+  //      writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+          writer.close();
 
         } catch (IOException e) {
             throw new RuntimeException(e);

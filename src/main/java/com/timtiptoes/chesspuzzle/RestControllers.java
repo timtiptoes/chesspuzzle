@@ -47,6 +47,19 @@ To build
 
 Visit
 	http://localhost:8081/make/2/random
+	
+	
+To deploy to tx2
+	Locally on mac
+		Change the path in BoardService and StorageSerivce
+		Put in sudo in BoardService for the docker run command
+		git push
+		./gradlew bootJar -x test
+	ssh to tx2
+	cd /media/tim/JetsonSSD-5001/git_repos/chesspuzzle
+	
+	
+	
 
  */
 @RestController
