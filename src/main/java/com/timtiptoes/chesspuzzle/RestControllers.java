@@ -50,14 +50,26 @@ Visit
 	
 	
 To deploy to tx2
+	ssh to tx2 (one time)
+		tmux att -t 0
+		cd /media/tim/JetsonSSD-5001/git_repos
+		git clone https://github.com/timtiptoes/chesspuzzle.git
+		mkdir /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static
 	Locally on mac
 		Change the path in BoardService and StorageSerivce
 		Put in sudo in BoardService for the docker run command
+		git commit -am 'modified paths'
 		git push
 		./gradlew bootJar -x test
+		scp build/libs/chesspuzzle-0.0.1-SNAPSHOT.jar tim@192.168.68.134:/media/tim/JetsonSSD-5001/git_repos/chesspuzzle/.
+		scp /Users/206660287/Documents/personal/chesspuzzle/src/main/resources/static/lichessDB.db  tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/.
+		scp /Users/206660287/Documents/personal/chesspuzzle/src/main/resources/static/board_key.png  tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/.
 	ssh to tx2
-	cd /media/tim/JetsonSSD-5001/git_repos/chesspuzzle
-	
+		tmux att -t 0
+		cd /media/tim/JetsonSSD-5001/git_repos/chesspuzzle/board_render
+		docker build -t chess:latest .
+		java -jar chesspuzzle-0.0.1-SNAPSHOT.jar
+		cd ..
 	
 	
 
