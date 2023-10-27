@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.json.JSONArray;
+
 
 public class BoardService {
 
@@ -58,7 +60,7 @@ public static String lookup_letter(String coordinate){
 
 }
 
-    public String drawBoard(String fen,int puzzleNum) {
+    public String drawBoard(JSONArray jsonList) {
         StringBuilder str = new StringBuilder();
 
 //        String render_path="/media/tim/JetsonSSD-500/git_repos/chess_puzzle/board_render";
@@ -69,7 +71,7 @@ public static String lookup_letter(String coordinate){
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
             //sudo is for tx2
   //        writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
-          writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest %s %s",fen,puzzleNum));
+          writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest %s",jsonList.toString()));
             writer.close();
 
         } catch (IOException e) {

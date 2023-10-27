@@ -23,6 +23,9 @@ import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 
 /*
 Tim! 
@@ -72,7 +75,7 @@ public class RestControllers {
 		StorageService storageService = new StorageService();
 		log.info(String.format("This is lastmove and I got mateNum:%s and lastMove:%s", mateNum, lastMove));
 
-		return storageService.query(mateNum, lastMove);
+		return storageService.query(mateNum, lastMove).toString();
 
 	}
 
@@ -84,9 +87,11 @@ public class RestControllers {
 
 		StorageService storageService = new StorageService();
 
-		String FEN = storageService.query(mateNum, lastMove);
+		JSONObject jsonObject = storageService.query(mateNum, lastMove);
+		JSONArray jsonList = new JSONArray();
+		jsonList.put(jsonObject);
 		BoardService boardService = new BoardService();
-		return boardService.drawBoard(FEN, 0);
+		return boardService.drawBoard(jsonList);
 
 	}
 
@@ -99,8 +104,12 @@ public class RestControllers {
 		String FEN = "";
 		String letter;
 		String lastMove;
+		StringBuilder outputStr;
 		ArrayList<String> outputDoc = new ArrayList<String>();
+		JSONObject jsonObject = new JSONObject();
+		JSONArray jsonList = new JSONArray();
 
+		
 		// TODO is this bad not use autowired?
 		String clue = rawClue.replace(" ", "").toLowerCase();
 		StorageService storageService = new StorageService();
@@ -109,15 +118,17 @@ public class RestControllers {
 		if (clue.equals("random")) {
 			clue = storageService.randomWord();
 		}
-		StringBuilder outputStr = SheetHelper.buildHeader(new StringBuilder(), clue.length());
 
+		
+		
 		for (int i = 1; i <= clue.length(); i++) {
 			letter = String.valueOf(clue.charAt(i - 1));
 			lastMove = boardService.getCoordinate(letter);
-			FEN = storageService.query(mateNum, lastMove);
+			jsonObject = storageService.query(mateNum, lastMove);
+			jsonList.put(jsonObject);
 		}
 
-		outputStr.append(boardService.drawBoard(FEN, i));
+		outputStr.append(boardService.drawBoard(jsonList));
 		return outputStr.toString();
 
 	}
