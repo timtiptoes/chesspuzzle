@@ -90,6 +90,14 @@ public class RestControllers {
 
 	}
 
+	@RequestMapping(value = "/listcategories", method = RequestMethod.GET)
+	public String ListCategories(HttpServletResponse response) {
+		StorageService storageService = new StorageService();
+
+		return storageService.listCategories();
+
+	}
+
 	@RequestMapping(value = "/key", method = RequestMethod.GET, produces = MediaType.IMAGE_PNG_VALUE)
 	public void getImage(HttpServletResponse response) throws IOException {
 
@@ -143,7 +151,11 @@ public class RestControllers {
 		StorageService storageService = new StorageService();
 		BoardService boardService = new BoardService();
 
-		if (storageService.categoryExists((clue))) {
+		if (clue.equalsIgnoreCase("random")){
+			log.info("Choosing random workd");
+			clue= storageService.randomWord();
+		}
+		else if (storageService.categoryExists((clue))) {
 			log.info("Back from categoryExists and it must be true");
 			log.info(String.format("Found %s using category %s",clue,rawClue));
 			clue = storageService.getCategoryWord(clue);

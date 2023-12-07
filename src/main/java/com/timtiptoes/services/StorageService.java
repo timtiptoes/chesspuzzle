@@ -109,6 +109,49 @@ public class StorageService {
 		return str.toString();
 
 	}
+	public String listCategories() {
+		Connection conn = null;
+		ResultSet rs = null;
+		Statement pstmt = null;
+
+		StringBuilder str = new StringBuilder();
+
+		try {
+			conn = this.connect();
+			pstmt = conn.createStatement();
+			String sql = "SELECT distinct(category) as category from words order by category;";
+			log.info(String.format("About to find distinct categories with:%s", sql));
+			System.out.println(String.format("About to find distinct categories with:%s", sql));
+
+			rs = pstmt.executeQuery(sql);
+			while (rs.next()) {
+				str.append(rs.getObject("category")+"\n");
+
+			}
+		} catch (Exception e) {
+			log.debug(e.toString());
+			return e.toString();
+		}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+		}
+		return str.toString();
+
+	}
 
 	public String getCategoryWord(String category) {
 
