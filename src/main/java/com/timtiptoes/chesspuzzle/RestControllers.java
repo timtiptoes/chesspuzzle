@@ -35,7 +35,7 @@ First you have to make sure there's a chesspuzzle:latest docker image available.
 	docker build -t chess:latest .
 
 test that it works on mac with
-	docker run --rm -v /Users/206660287/Documents/personal/chesspuzzle/board_render:/tmp chess:latest '1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25' 'b7c6 e3a7 b8a8 d5b6' 'tJ48p' 2 5
+	docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/board_render:/tmp chess:latest '1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25' 'b7c6 e3a7 b8a8 d5b6' 'tJ48p' 2 5
 
 test that it works on tx2 with
 	docker run --rm -v /media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render:/tmp chess:latest '[{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5}]'
@@ -50,8 +50,8 @@ To build
 
 Visit
 	http://localhost:8081/make/2/random
-	
-	
+
+
 To deploy to tx2
 	ssh to tx2 (one time)
 		tmux att -t 0
@@ -59,7 +59,7 @@ To deploy to tx2
 		git clone https://github.com/timtiptoes/chesspuzzle.git
 		mkdir /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static
 	Locally on mac
-		Change the path in BoardService and StorageSerivce and remove sudo
+		Change the path in BoardService and StorageSerivce
 		Put in sudo in BoardService for the docker run command
 		git commit -am 'modified paths'
 		git push
@@ -143,11 +143,17 @@ public class RestControllers {
 		StorageService storageService = new StorageService();
 		BoardService boardService = new BoardService();
 
-		if (clue.equals("random")) {
-			clue = storageService.randomWord();
+		if (storageService.categoryExists((clue))) {
+			log.info("Back from categoryExists and it must be true");
+			log.info(String.format("Found %s using category %s",clue,rawClue));
+			clue = storageService.getCategoryWord(clue);
+			log.info(String.format("Found %s using category %s",clue,rawClue));
+		}
+		else {
+			log.info(String.format("Could not find category %s",rawClue));
 		}
 
-		
+		log.info(String.format("About to make puzzle with %s",clue));
 		
 		for (int i = 1; i <= clue.length(); i++) {
 			letter = String.valueOf(clue.charAt(i - 1));

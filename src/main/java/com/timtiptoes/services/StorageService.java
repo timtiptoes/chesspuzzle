@@ -67,17 +67,20 @@ public class StorageService {
 	}
 
 	public String randomWord() {
+		Connection conn = null;
+		ResultSet rs = null;
+		Statement pstmt = null;
 
 		StringBuilder str = new StringBuilder();
 
 		try {
-			Connection conn = this.connect();
-			Statement pstmt = conn.createStatement();
+			conn = this.connect();
+			pstmt = conn.createStatement();
 			String sql = "SELECT word as word FROM words  WHERE   length(word) > 6 and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM words)) LIMIT 1;";
 			log.info(String.format("About to find word with:%s", sql));
 			System.out.println(String.format("About to find word with:%s", sql));
 
-			ResultSet rs = pstmt.executeQuery(sql);
+			rs = pstmt.executeQuery(sql);
 			while (rs.next()) {
 				str.append(rs.getObject("word"));
 
@@ -86,8 +89,117 @@ public class StorageService {
 			log.debug(e.toString());
 			return e.toString();
 		}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+		}
 		return str.toString();
 
 	}
+
+	public String getCategoryWord(String category) {
+
+		Connection conn = null;
+		ResultSet rs = null;
+		Statement pstmt = null;
+
+		StringBuilder str = new StringBuilder();
+
+		try {
+			conn = this.connect();
+			pstmt = conn.createStatement();
+			String sql = String.format("SELECT word as word FROM words  WHERE category='%s' and length(word) > 6 and rowid > (ABS(RANDOM()) %% (select (max(rowid)-min(rowid)) from words where category='%s')+ (select MIN(rowid) from words where category='%s')) LIMIT 1;",category,category,category);
+			log.info(String.format("About to find word with:%s", sql));
+			System.out.println(String.format("About to find word with:%s", sql));
+
+			rs = pstmt.executeQuery(sql);
+			while (rs.next()) {
+				str.append(rs.getObject("word"));
+
+			}
+		} catch (Exception e) {
+			log.info(e.toString());
+			return e.toString();
+		}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) { /* ignored */}
+			}
+		}
+		return str.toString();
+
+	}
+	public Boolean categoryExists(String category) {
+		Connection conn = null;
+		ResultSet rs = null;
+		Statement pstmt = null;
+		StringBuilder str = new StringBuilder();
+		Boolean returnResult=false;
+		log.info("Trying...");
+		try {
+			conn = this.connect();
+			pstmt = conn.createStatement();
+			String sql = "SELECT 1 FROM words  WHERE  category = '"+ category + "' LIMIT 10;";
+			//String sql ="SELECT 1;";
+			log.info(String.format("L:About to find category with:%s", sql));
+			System.out.println(String.format("S:About to find category with:%s", sql));
+
+			rs = pstmt.executeQuery(sql);
+			int fetchSize = rs.getFetchSize();
+			log.info(String.format("ResultSet fetchsize:%s",fetchSize));
+			while (rs.next()) {
+				returnResult=true;
+				log.info("About to return true");
+			}
+		} catch (Exception e) {
+			log.info("Catching...");
+			log.info(e.toString());
+			}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e) { log.info("rs:"+e.toString());}
+			}
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (SQLException e) {log.info("ps:"+e.toString());}
+			}
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (SQLException e) { log.info("conn:"+e.toString());}
+			}
+		}
+		log.info(String.format("Actually returning %s",returnResult.toString()));
+		return returnResult;
+
+		}
 
 }
