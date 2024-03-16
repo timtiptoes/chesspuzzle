@@ -43,7 +43,7 @@ test that it works on tx2 with
 There are three things you have to change when switching environments
 path in storage service
 path in board service
-remove sudo in docker run also in board service
+add sudo in docker run also in board service for tx2
 
 To build
 	./gradlew bootJar
@@ -64,10 +64,9 @@ To deploy to tx2
 		git commit -am 'modified paths'
 		git push
 		./gradlew bootJar -x test
-		scp build/libs/chesspuzzle-0.0.1-SNAPSHOT.jar tim@192.168.68.134:/media/tim/JetsonSSD-5001/git_repos/chesspuzzle/.
-		scp /Users/206660287/Documents/personal/chesspuzzle/src/main/resources/static/lichessDB.db  tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/.
+		scp -i ~/.ssh/id_jetson build/libs/chesspuzzle-0.0.1-SNAPSHOT.jar tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/.
 		scp /Users/206660287/Documents/personal/chesspuzzle/src/main/resources/static/board_key.png  tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/.
-	ssh to tx2
+		scp -i ~/.ssh/id_jetson /Users/206660287/Documents/personal/github/chesspuzzle/src/main/resources/static/lichessDB.db tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/.
 		tmux att -t 0
 		cd /media/tim/JetsonSSD-5001/git_repos/chesspuzzle/board_render
 		docker build -t chess:latest .
@@ -152,7 +151,7 @@ public class RestControllers {
 		BoardService boardService = new BoardService();
 
 		if (clue.equalsIgnoreCase("random")){
-			log.info("Choosing random workd");
+			log.info("Choosing random word");
 			clue= storageService.randomWord();
 		}
 		else if (storageService.categoryExists((clue))) {
