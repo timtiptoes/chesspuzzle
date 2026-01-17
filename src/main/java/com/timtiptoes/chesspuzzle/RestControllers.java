@@ -75,7 +75,15 @@ To deploy to tx2
 		java -jar chesspuzzle-0.0.1-SNAPSHOT.jar
 		cd ..
 	
-	
+	1/17/2026
+		build locally
+			cd /Users/timlevine/Documents/github/chesspuzzle
+			./gradlew bootJar
+			scp build/libs/starter_web-0.0.1-SNAPSHOT.jar tim@192.168.68.60:/mnt/Jetson-500/git_repos/chesspuzzle/chesspuzzle-0.0.1-SNAPSHOT.jar
+
+	NOTE! Even though lichessDB.db is included in the jar, it has nothing to do with what's used by the code. Instead modify the local copy of lichessDB.db and move it up to 
+		  the tx2 like this
+		  		scp src/main/resources/lichessDB.db tim@192.168.68.60:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db
 
  */
 @RestController
