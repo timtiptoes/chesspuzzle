@@ -3,7 +3,6 @@ package com.timtiptoes.chesspuzzle;
 import com.timtiptoes.helpers.SheetHelper;
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
-import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -108,8 +107,8 @@ public class RestControllers {
 	@RequestMapping(value = "/key", method = RequestMethod.GET, produces = MediaType.IMAGE_PNG_VALUE)
 	public void getImage(HttpServletResponse response) throws IOException {
 
-		var imgFile = new ClassPathResource("static/board_key.png");
-
+		ClassPathResource imgFile = new ClassPathResource("board_key.png");
+		
 		response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		StreamUtils.copy(imgFile.getInputStream(), response.getOutputStream());
 	}
