@@ -37,7 +37,6 @@ out/
 .vscode/
 
 src/main/resources/lichess_db_puzzle.csv
-src/main/resources/static/lichessDB.db
 *.csv
 .DS_Store
 .jython_cache/
@@ -66,7 +65,6 @@ gradlew.bat
 src/.DS_Store
 src/main/.DS_Store
 src/main/resources/.DS_Store
-src/main/resources/static/
 !src/main/resources/static/board_key.png
 src/test/.DS_Store
 src/test/java/.DS_Store
