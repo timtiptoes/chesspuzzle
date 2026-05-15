@@ -17,9 +17,7 @@ public class StorageService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	private Connection connect() {
-		// // SQLite connection string
-		//String url = "jdbc:sqlite:/Users/206660287/Documents/personal/github/chesspuzzle/src/main/resources/static/lichessDB.db";
-	    String url = "jdbc:sqlite:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db";
+		String url = "jdbc:sqlite:" + System.getenv().getOrDefault("LICHESS_DB_PATH", "/app/lichessDB.db");
 
 		Connection conn = null;
 		try {

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chess Puzzle Maker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    form { margin-bottom: 2em; }
+    .form-group { margin-bottom: 1em; }
+    label { display: block; margin-bottom: 0.5em; }
+    input, select { padding: 0.5em; width: 200px; }
+    button { padding: 0.5em 1em; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #output { margin-top: 2em; }
+    #output img { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <h1>Chess Puzzle Maker</h1>
+  <form id="puzzleForm">
+    <div class="form-group">
+      <label for="clueString">Clue String lowercase a-z only no spaces:</label>
+      <input type="text" id="clueString" name="clueString" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="matein">Mate in n moves:</label>
+      <select id="matein" name="matein">
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </div>
+    
+    <button type="submit">Submit</button>
+  </form>
+  
+  <div id="output"></div>
+  
+  <script>
+    document.getElementById('puzzleForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      
+      const clueString = form.clueString.value;
+      const matein = parseInt(form.matein.value);
+      
+      // Show loading state
+      document.getElementById('output').innerHTML = '<p>Opening puzzle in new window...</p>';
+      
+	    const url = `/make/${matein}/${encodeURIComponent(clueString)}`;
+      console.log('Opening URL:', url);
+      
+      // Open the URL in a new window/tab to bypass CORS
+      const newWindow = window.open(url, '_blank');
+      
+      if (newWindow) {
+        document.getElementById('output').innerHTML = `
+          <h3>Puzzle Opened</h3>
+          <p>The puzzle has been opened in a new window/tab.</p>
+          <p>If the window didn't open, click this link: <a href="${url}" target="_blank">${url}</a></p>
+        `;
+      } else {
+        document.getElementById('output').innerHTML = `
+          <p style="color: red;">Popup blocked! Please allow popups for this site.</p>
+          <p>Or click this link to open the puzzle: <a href="${url}" target="_blank">${url}</a></p>
+        `;
+      }
+    };
+  </script>
+</body>
+</html>

@@ -61,23 +61,20 @@ public class BoardService {
 	public String drawBoard(JSONArray jsonList) {
         StringBuilder str = new StringBuilder();
 
-        String render_path="/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render";
-        //String render_path="/Users/206660287/Documents/personal/github/chesspuzzle/board_render";
-        //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
+        String renderScriptPath = System.getenv().getOrDefault("BOARD_RENDER_SCRIPT", "/app/board_render/main.py");
         BufferedWriter writer = null;
+        File doitSh = null;
         try {
-            writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
-            //sudo is for tx2
-          writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
-        //writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
-          writer.close();
-
+            doitSh = File.createTempFile("doit", ".sh");
+            doitSh.setExecutable(true);
+            writer = new BufferedWriter(new FileWriter(doitSh));
+            writer.write(String.format("python3 %s '%s'", renderScriptPath, jsonList.toString().replace("'", "'\\''")));
+            writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-
-        String command=render_path+"/doit.sh";
+        String command = doitSh.getAbsolutePath();
 
         log.info("in drawBoard and about to execute "+command);
         try {
