@@ -61,8 +61,8 @@ public class BoardService {
 	public String drawBoard(JSONArray jsonList) {
         StringBuilder str = new StringBuilder();
 
-        //String render_path="/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render";
-        String render_path="/Users/timlevine/Documents/github/chesspuzzle/board_render";
+        String render_path="/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render";
+        //String render_path="/Users/timlevine/Documents/github/chesspuzzle/board_render";
         //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
         BufferedWriter writer = null;
         try {
