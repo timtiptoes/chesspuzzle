@@ -29,6 +29,37 @@ import org.json.JSONObject;
 /*
 Tim! 
 
+Here's the general idea
+
+The full flow for /make/2/random:
+
+Word selection — StorageService.randomWord() queries the words table in lichessDB.db for a random word longer than 6 characters. If you pass a category name instead of "random" (e.g. /make/2/animals), it checks categoryExists() first and pulls a word from that category instead.
+
+Letter → coordinate mapping — For each letter in the word, BoardService.getCoordinate(letter) picks a random chess square (e.g. a1–h8) that maps to that letter. The mapping is mathematical: a board has 64 squares, each square maps to one of 26 letters via (x + 8*y) % 26. Multiple squares can map to the same letter, so it picks one randomly from the matching squares.
+
+Puzzle lookup — For each coordinate (the "lastMove"), StorageService.query(mateNum, lastMove) queries the mateIn table for a random puzzle where the last move lands on that square AND the theme is mateIn2. It returns FEN, move sequence, and puzzle ID as JSON.
+
+doit.sh generation — BoardService.drawBoard() writes a shell script (board_render/doit.sh) that runs the Docker container, passing the full JSON array of all puzzles as a single argument.
+
+Docker execution — The Java process executes doit.sh directly via Runtime.getRuntime().exec(), reads stdout line by line, and returns it as the HTTP response body.
+
+Output — The Docker container renders the board positions and writes SVG (or similar) to stdout, which gets returned as the response.
+
+board_key.png — bundled in the jar AND read from it via ClassPathResource. No scp needed, works automatically.
+
+lichessDB.db — also bundled in the jar (it's in src/main/resources/static/), but the SQLite connection uses a hardcoded absolute file path (jdbc:sqlite:/Users/timlevine/...), so the bundled copy is ignored. You already wrote this note to yourself in RestControllers.java: "NOTE! Even though lichessDB.db is included in the jar, it has nothing to do with what's used by the code." You must scp it separately.
+
+Full checklist to deploy to the Jetson tx2:
+
+StorageService.java — swap the url to the Jetson path (comment/uncomment lines 21–22)
+BoardService.java — swap render_path to the Jetson path, and switch back to sudo docker run (lines 64–72)
+Build: ./gradlew bootJar
+scp the jar to the Jetson
+scp src/main/resources/lichessDB.db to /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db on the Jetson
+On the Jetson, make sure the Docker image is built (docker build -t chess:latest . in board_render/)
+Run: java -jar chesspuzzle-0.0.1-SNAPSHOT.jar
+
+
 First you have to make sure there's a chesspuzzle:latest docker image available. So cd into board_render and go
 	cd board_render
 	docker build -t chess:latest .

@@ -68,9 +68,10 @@ public class BoardService {
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
             //sudo is for tx2
-          writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
-        //writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+          //writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+        writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
           writer.close();
+          new File(render_path + "/doit.sh").setExecutable(true);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
