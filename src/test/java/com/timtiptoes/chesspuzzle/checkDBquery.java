@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ class checkDBquery {
 		String lastMove="d7";
 		
 		try {
-			String url = "jdbc:sqlite:/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/main/resources/static/lichessDB.db";
+			String url = "jdbc:sqlite:/Users/timlevine/Documents/github/chesspuzzle/src/main/resources/static/lichessDB.db";
 
 			Connection conn = null;
 			try {
@@ -32,15 +32,23 @@ class checkDBquery {
 			} catch (SQLException e) {
 
 			}
-			Statement pstmt = conn.createStatement();
-			String sql = String.format(
-					"SELECT quote('fen')||':'||quote(FEN) || ',' || quote('moves')||':'||quote(moves) || ',' ||quote('puzzle_id')||':'||quote(PuzzleId) as FEN FROM mateIn WHERE lastMove = '%s'",
-					lastMove) + "AND INSTR(Themes,'mateIn" + Integer.valueOf(mateNum)
-					+ "') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
+			// Keep this in step with StorageService.query: the theme alone is not enough,
+			// since Lichess tags every mate of five moves or more as "mateIn5". The move
+			// list is the opponent's first move plus the solution, so a true mate in
+			// mateNum is exactly 2 * mateNum plies, counted here as spaces + 1.
+			String sql = "SELECT quote('fen')||':'||quote(FEN) || ',' || quote('moves')||':'||quote(moves) || ',' ||quote('puzzle_id')||':'||quote(PuzzleId) as FEN FROM mateIn"
+					+ " WHERE lastMove = ?"
+					+ " AND INSTR(Themes, 'mateIn' || ?)"
+					+ " AND length(moves) - length(replace(moves, ' ', '')) + 1 = 2 * ?"
+					+ " ORDER BY RANDOM() LIMIT 1;";
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, lastMove);
+			pstmt.setInt(2, mateNum);
+			pstmt.setInt(3, mateNum);
 
 			//System.out.println(sql);
-			
-			ResultSet rs = pstmt.executeQuery(sql);
+
+			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				System.out.println(rs.getObject("FEN"));
 			}

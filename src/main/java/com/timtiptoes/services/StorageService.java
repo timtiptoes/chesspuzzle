@@ -42,13 +42,23 @@ public class StorageService {
 
 		try {
 			Connection conn = this.connect();
-			Statement pstmt = conn.createStatement();
-			String sql = String.format("SELECT FEN, moves, PuzzleId FROM mateIn WHERE lastMove = '%s'", lastMove)
-					+ "AND INSTR(Themes,'mateIn" + Integer.valueOf(mateNum)
-					+ "') and rowid > (ABS(RANDOM()) % (SELECT max(rowid) FROM mateIn)) LIMIT 1;";
-			log.info(String.format("About to execute:%s", sql));
+			/*
+			 * Lichess tags every mate of five moves or more as "mateIn5", so the theme on
+			 * its own also serves up 6, 7 ... 10 move mates. The move list holds the
+			 * opponent's first move plus the solution, so a true mate in mateNum is
+			 * exactly 2 * mateNum plies; count them as spaces + 1 and filter on that.
+			 */
+			String sql = "SELECT FEN, moves, PuzzleId FROM mateIn WHERE lastMove = ?"
+					+ " AND INSTR(Themes, 'mateIn' || ?)"
+					+ " AND length(moves) - length(replace(moves, ' ', '')) + 1 = 2 * ?"
+					+ " ORDER BY RANDOM() LIMIT 1;";
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, lastMove);
+			pstmt.setInt(2, mateNum);
+			pstmt.setInt(3, mateNum);
+			log.info(String.format("About to execute:%s with lastMove:%s mateNum:%s", sql, lastMove, mateNum));
 
-			ResultSet rs = pstmt.executeQuery(sql);
+			ResultSet rs = pstmt.executeQuery();
 
 
 			while (rs.next()) {
