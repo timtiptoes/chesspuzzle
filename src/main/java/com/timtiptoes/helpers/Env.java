@@ -14,14 +14,12 @@ import org.slf4j.LoggerFactory;
  *
  * CHESSPUZZLE_DB_URL         jdbc url (or plain file path) of lichessDB.db
  * CHESSPUZZLE_RENDER_PATH    directory holding doit.sh, mounted into chess:latest
- * CHESSPUZZLE_DOCKER_CMD     docker command doit.sh runs, "sudo docker" on the tx2
  * CHESSPUZZLE_TEST_PYTHON_PATH  directory holding the test python scripts
  */
 public final class Env {
 
 	public static final String DB_URL = "CHESSPUZZLE_DB_URL";
 	public static final String RENDER_PATH = "CHESSPUZZLE_RENDER_PATH";
-	public static final String DOCKER_CMD = "CHESSPUZZLE_DOCKER_CMD";
 	public static final String TEST_PYTHON_PATH = "CHESSPUZZLE_TEST_PYTHON_PATH";
 
 	private static final Logger log = LoggerFactory.getLogger(Env.class);
@@ -47,14 +45,6 @@ public final class Env {
 	 */
 	public static String renderPath() {
 		return absolute(value(RENDER_PATH, "board_render"));
-	}
-
-	/**
-	 * The docker command written into doit.sh. The tx2 needs to run docker under
-	 * sudo, so set CHESSPUZZLE_DOCKER_CMD to "sudo docker" there.
-	 */
-	public static String dockerCmd() {
-		return value(DOCKER_CMD, "docker");
 	}
 
 	/** Directory holding print_version.py and doit.sh. */

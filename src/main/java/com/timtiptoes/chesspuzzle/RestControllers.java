@@ -54,7 +54,6 @@ Full checklist to deploy to the Jetson tx2:
 No source edits needed for the paths any more: run the jar from the checkout root and the defaults in Env.java resolve, or set CHESSPUZZLE_DB_URL / CHESSPUZZLE_RENDER_PATH to point elsewhere, e.g.
 	export CHESSPUZZLE_DB_URL=/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db
 	export CHESSPUZZLE_RENDER_PATH=/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render
-	export CHESSPUZZLE_DOCKER_CMD="sudo docker"
 Build: ./gradlew bootJar
 scp the jar to the Jetson
 scp src/main/resources/lichessDB.db to /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db on the Jetson
@@ -72,10 +71,10 @@ test that it works on mac with
 test that it works on tx2 with
 	docker run --rm -v /media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render:/tmp chess:latest '[{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5},{"fen": "1k1r1b1r/1pR5/p1R5/3Np1p1/7p/3PB3/PPP5/7K b - - 0 25", "moves": "b7c6 e3a7 b8a8 d5b6", "puzzle_id": "tJ48p", "mateNum": 2, "puzzleNum": 5}]'
 
-There are three things you have to change when switching environments
-path in storage service
-path in board service
-add sudo in docker run also in board service for tx2
+Nothing has to be changed in the source when switching environments any more:
+the paths come from CHESSPUZZLE_DB_URL and CHESSPUZZLE_RENDER_PATH (see Env.java)
+and default to the checkout root, and docker runs without sudo on both machines
+since tim is in the docker group on the tx2.
 
 To build
 	./gradlew bootJar
@@ -91,9 +90,7 @@ To deploy to tx2
 		git clone https://github.com/timtiptoes/chesspuzzle.git
 		mkdir /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static
 	Locally on mac
-		Change the path in BoardService and StorageSerivce
-		Put in sudo in BoardService for the docker run command
-		git commit -am 'modified paths'
+		git commit -am 'whatever changed'
 		git push
 		./gradlew bootJar -x test
 		scp -i ~/.ssh/id_jetson build/libs/chesspuzzle-0.0.1-SNAPSHOT.jar tim@192.168.68.134:/media/tim/JetsonSSD-500/git_repos/chesspuzzle/.

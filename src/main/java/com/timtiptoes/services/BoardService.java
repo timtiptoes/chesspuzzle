@@ -68,8 +68,8 @@ public class BoardService {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
-            //sudo is for tx2, set CHESSPUZZLE_DOCKER_CMD to "sudo docker" there
-        writer.write(String.format(Env.dockerCmd()+" run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+            //tim is in the docker group on the tx2, so no sudo needed there either
+        writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
           writer.close();
           new File(render_path + "/doit.sh").setExecutable(true);
 
