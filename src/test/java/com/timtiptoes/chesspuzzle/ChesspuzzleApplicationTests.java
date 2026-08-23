@@ -1,5 +1,6 @@
 package com.timtiptoes.chesspuzzle;
 
+import com.timtiptoes.helpers.Env;
 import com.timtiptoes.services.BoardService;
 import com.timtiptoes.services.StorageService;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class ChesspuzzleApplicationTests {
 
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("python");
-		engine.eval(new FileReader("/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/test/python/print_version.py"), context);
+		engine.eval(new FileReader(Env.testPythonPath() + "/print_version.py"), context);
 		assertEquals("Should contain script output: ", "Hello Baeldung Readers!!", writer.toString().trim());
 	}
 
@@ -29,7 +30,7 @@ class ChesspuzzleApplicationTests {
 
 //@Test
 	public void runfromOS(){
-	String command = "/Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/src/test/python/doit.sh";
+	String command = Env.testPythonPath() + "/doit.sh";
 
 	try {
 		Process process = Runtime.getRuntime().exec(command);

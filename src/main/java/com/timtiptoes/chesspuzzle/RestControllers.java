@@ -47,12 +47,14 @@ Output — The Docker container renders the board positions and writes SVG (or s
 
 board_key.png — bundled in the jar AND read from it via ClassPathResource. No scp needed, works automatically.
 
-lichessDB.db — also bundled in the jar (it's in src/main/resources/static/), but the SQLite connection uses a hardcoded absolute file path (jdbc:sqlite:/Users/timlevine/...), so the bundled copy is ignored. You already wrote this note to yourself in RestControllers.java: "NOTE! Even though lichessDB.db is included in the jar, it has nothing to do with what's used by the code." You must scp it separately.
+lichessDB.db — also bundled in the jar (it's in src/main/resources/static/), but the SQLite connection opens a file path off disk (CHESSPUZZLE_DB_URL, defaulting to src/main/resources/static/lichessDB.db under the working directory), so the bundled copy is ignored. You already wrote this note to yourself in RestControllers.java: "NOTE! Even though lichessDB.db is included in the jar, it has nothing to do with what's used by the code." You must scp it separately.
 
 Full checklist to deploy to the Jetson tx2:
 
-StorageService.java — swap the url to the Jetson path (comment/uncomment lines 21–22)
-BoardService.java — swap render_path to the Jetson path, and switch back to sudo docker run (lines 64–72)
+No source edits needed for the paths any more: run the jar from the checkout root and the defaults in Env.java resolve, or set CHESSPUZZLE_DB_URL / CHESSPUZZLE_RENDER_PATH to point elsewhere, e.g.
+	export CHESSPUZZLE_DB_URL=/media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db
+	export CHESSPUZZLE_RENDER_PATH=/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render
+	export CHESSPUZZLE_DOCKER_CMD="sudo docker"
 Build: ./gradlew bootJar
 scp the jar to the Jetson
 scp src/main/resources/lichessDB.db to /media/tim/JetsonSSD-500/git_repos/chesspuzzle/src/main/resources/static/lichessDB.db on the Jetson

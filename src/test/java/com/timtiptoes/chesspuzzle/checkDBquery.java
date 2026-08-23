@@ -7,6 +7,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
+
+import com.timtiptoes.helpers.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +26,7 @@ class checkDBquery {
 		String lastMove="d7";
 		
 		try {
-			String url = "jdbc:sqlite:/Users/timlevine/Documents/github/chesspuzzle/src/main/resources/static/lichessDB.db";
+			String url = Env.dbUrl();
 
 			Connection conn = null;
 			try {

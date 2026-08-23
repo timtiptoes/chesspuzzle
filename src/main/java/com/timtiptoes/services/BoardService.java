@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Random;
 import org.json.JSONArray;
 
+import com.timtiptoes.helpers.Env;
+
 public class BoardService {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -61,15 +63,13 @@ public class BoardService {
 	public String drawBoard(JSONArray jsonList) {
         StringBuilder str = new StringBuilder();
 
-        //String render_path="/media/tim/JetsonSSD-500/git_repos/chesspuzzle/board_render";
-        String render_path="/Users/timlevine/Documents/github/chesspuzzle/board_render";
-        //String command="bash -c docker run --rm -v /Users/206660287/Documents/personal/chess_puzzle/chesspuzzle/latex_stuff:/tmp chess:latest "+fen;
+        //set CHESSPUZZLE_RENDER_PATH to point somewhere else, it defaults to board_render under the working directory
+        String render_path=Env.renderPath();
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(render_path + "/doit.sh"));
-            //sudo is for tx2
-          //writer.write(String.format("sudo docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
-        writer.write(String.format("docker run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
+            //sudo is for tx2, set CHESSPUZZLE_DOCKER_CMD to "sudo docker" there
+        writer.write(String.format(Env.dockerCmd()+" run --rm -v "+render_path+":/tmp chess:latest '%s'",jsonList.toString()));
           writer.close();
           new File(render_path + "/doit.sh").setExecutable(true);
 
