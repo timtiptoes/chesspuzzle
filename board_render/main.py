@@ -51,10 +51,13 @@ for puzzle in data:
 	moves=puzzle['moves']
 	puzzle_id=puzzle['puzzle_id']
 	mateNum=puzzle['mateNum']
+	# lm means the letter comes from the square the mate lands on, fm from where the key move lands
+	moveType=puzzle.get('moveType','lm')
+	square_term='mate' if moveType=='lm' else 'key move'
 	puzzleNum=line_cnt+1
 	first_move=moves.split(' ')[0]
 	whose_move='white' if fen.split(" ")[1]=='b' else 'black'
-	move_string=f'<br><br><br><br><p style="margin-left: 0px;"># {puzzleNum-1}  mate in {mateNum}, {whose_move} to move&nbsp&nbsp&nbsp&nbsp&nbsp id:{puzzle_id}</p>'
+	move_string=f'<br><br><br><br><p style="margin-left: 0px;"># {puzzleNum-1}  mate in {mateNum}, {whose_move} to move, {square_term}&nbsp&nbsp&nbsp&nbsp&nbsp id:{puzzle_id}</p>'
 	board = chess.Board(fen)
 	Nf3 = chess.Move.from_uci(first_move)
 	board.push(Nf3)  # Make the move

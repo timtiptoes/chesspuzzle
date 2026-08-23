@@ -30,13 +30,28 @@ public class StorageService {
 		return conn;
 	}
 
+	/** The two ends of a puzzle a clue coordinate can point at. */
+	public static final String FIRST_MOVE = "fm";
+	public static final String LAST_MOVE = "lm";
+
+	/** Kept for callers that only ever ask about the mating move. */
 	public JSONObject query(int mateNum, String lastMove) {
+		return query(mateNum, LAST_MOVE, lastMove);
+	}
+
+	/**
+	 * moveType is fm or lm: fm matches the square the solver's first move lands on,
+	 * lm the square the mating move lands on.
+	 */
+	public JSONObject query(int mateNum, String moveType, String coordinate) {
 
 		StringBuilder str = new StringBuilder();
 		/*
 		 * CREATE TABLE mateIn ( PuzzleId TEXT, FEN TEXT, moves TEXT, Rating INT,
 		 * RatingDeviation INT, Popularity INT, NbPlays INT, Themes TEXT, GameUrl TEXT,
-		 * OpeningTags TEXT, lastMove );
+		 * OpeningTags TEXT, lastMove, firstMove TEXT );
+		 * CREATE INDEX idx_mateIn_lastMove ON mateIn(lastMove);
+		 * CREATE INDEX idx_mateIn_firstMove ON mateIn(firstMove);
 		 */
 		JSONObject obj = new JSONObject();
 
@@ -48,15 +63,15 @@ public class StorageService {
 			 * opponent's first move plus the solution, so a true mate in mateNum is
 			 * exactly 2 * mateNum plies; count them as spaces + 1 and filter on that.
 			 */
-			String sql = "SELECT FEN, moves, PuzzleId FROM mateIn WHERE lastMove = ?"
+			String sql = "SELECT FEN, moves, PuzzleId FROM mateIn WHERE " + columnFor(moveType) + " = ?"
 					+ " AND INSTR(Themes, 'mateIn' || ?)"
 					+ " AND length(moves) - length(replace(moves, ' ', '')) + 1 = 2 * ?"
 					+ " ORDER BY RANDOM() LIMIT 1;";
 			PreparedStatement pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, lastMove);
+			pstmt.setString(1, coordinate);
 			pstmt.setInt(2, mateNum);
 			pstmt.setInt(3, mateNum);
-			log.info(String.format("About to execute:%s with lastMove:%s mateNum:%s", sql, lastMove, mateNum));
+			log.info(String.format("About to execute:%s with %s:%s mateNum:%s", sql, moveType, coordinate, mateNum));
 
 			ResultSet rs = pstmt.executeQuery();
 
@@ -66,6 +81,7 @@ public class StorageService {
 				obj.put("moves", rs.getObject("moves"));
 				obj.put("puzzle_id", rs.getObject("PuzzleId"));
 				obj.put("mateNum", mateNum);
+				obj.put("moveType", moveType);
 			}
 		}
 
@@ -74,6 +90,20 @@ public class StorageService {
 		}
 		return obj;
 
+	}
+
+	/**
+	 * Column the clue coordinate is matched against. Whitelisted rather than passed
+	 * through, since an identifier cannot be bound as a parameter.
+	 */
+	private static String columnFor(String moveType) {
+		if (FIRST_MOVE.equalsIgnoreCase(moveType)) {
+			return "firstMove";
+		}
+		if (LAST_MOVE.equalsIgnoreCase(moveType)) {
+			return "lastMove";
+		}
+		throw new IllegalArgumentException("moveType must be " + FIRST_MOVE + " or " + LAST_MOVE + ", got:" + moveType);
 	}
 
 	public String randomWord() {

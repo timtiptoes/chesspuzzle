@@ -31,13 +31,13 @@ Tim!
 
 Here's the general idea
 
-The full flow for /make/2/random:
+The full flow for /make/2/lm/random:
 
-Word selection — StorageService.randomWord() queries the words table in lichessDB.db for a random word longer than 6 characters. If you pass a category name instead of "random" (e.g. /make/2/animals), it checks categoryExists() first and pulls a word from that category instead.
+Word selection — StorageService.randomWord() queries the words table in lichessDB.db for a random word longer than 6 characters. If you pass a category name instead of "random" (e.g. /make/2/lm/animals), it checks categoryExists() first and pulls a word from that category instead.
 
 Letter → coordinate mapping — For each letter in the word, BoardService.getCoordinate(letter) picks a random chess square (e.g. a1–h8) that maps to that letter. The mapping is mathematical: a board has 64 squares, each square maps to one of 26 letters via (x + 8*y) % 26. Multiple squares can map to the same letter, so it picks one randomly from the matching squares.
 
-Puzzle lookup — For each coordinate (the "lastMove"), StorageService.query(mateNum, lastMove) queries the mateIn table for a random puzzle where the last move lands on that square AND the theme is mateIn2. It returns FEN, move sequence, and puzzle ID as JSON.
+Puzzle lookup — For each coordinate, StorageService.query(mateNum, moveType, coordinate) queries the mateIn table for a random puzzle landing on that square AND tagged mateIn2 AND exactly 2*mateNum plies long. moveType picks which end of the puzzle the coordinate refers to: lm is the square the mating move lands on (the lastMove column), fm is the square the solver's first move lands on (the firstMove column). It returns FEN, move sequence, and puzzle ID as JSON.
 
 doit.sh generation — BoardService.drawBoard() writes a shell script (board_render/doit.sh) that runs the Docker container, passing the full JSON array of all puzzles as a single argument.
 
@@ -172,15 +172,16 @@ public class RestControllers {
 
 	}
 
-	@RequestMapping(value = "/make/{mateNum}/{rawClue}", method = RequestMethod.GET)
+	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET)
 	public String make(@PathVariable @Min(1) @Max(5) int mateNum,
+			@PathVariable @Pattern(regexp = "^(fm|lm)$") String moveType,
 			@Pattern(regexp = "^[a-z]{1,21}$") @PathVariable String rawClue) {
 
-		log.info(String.format("This is make and I got mateNum:%s and lastMove:%s", mateNum, rawClue));
+		log.info(String.format("This is make and I got mateNum:%s moveType:%s and clue:%s", mateNum, moveType, rawClue));
 
 		String FEN = "";
 		String letter;
-		String lastMove;
+		String coordinate;
 		JSONObject jsonObject = new JSONObject();
 		JSONArray jsonList = new JSONArray();
 
@@ -208,8 +209,8 @@ public class RestControllers {
 		
 		for (int i = 1; i <= clue.length(); i++) {
 			letter = String.valueOf(clue.charAt(i - 1));
-			lastMove = boardService.getCoordinate(letter);
-			jsonObject = storageService.query(mateNum, lastMove);
+			coordinate = boardService.getCoordinate(letter);
+			jsonObject = storageService.query(mateNum, moveType, coordinate);
 			jsonList.put(jsonObject);
 		}
 
