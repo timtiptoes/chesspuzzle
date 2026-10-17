@@ -173,7 +173,7 @@ public class RestControllers {
 	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
 	public ResponseEntity<byte[]> make(@PathVariable @Min(1) @Max(5) int mateNum,
 			@PathVariable @Pattern(regexp = "^(fm|lm)$") String moveType,
-			@Pattern(regexp = "^[a-z]{1,21}$") @PathVariable String rawClue) {
+			@Pattern(regexp = "^[a-z]{1,100}$") @PathVariable String rawClue) {
 
 		log.info(String.format("This is make and I got mateNum:%s moveType:%s and clue:%s", mateNum, moveType, rawClue));
 

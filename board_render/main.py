@@ -23,13 +23,28 @@ GUTTER = 3                        # points between boards, they sit almost edge 
 CAPTION_FONT = "Helvetica"
 CAPTION_SIZE = 8
 KEY_IMAGE = "board_key.png"       # dropped into the mounted dir by BoardService
-HEADER_HEIGHT = 56                # title and answer blanks; reserved on every page so
-                                  # the boards come out the same size throughout
+TITLE_BLOCK = 30                  # title line above the answer blanks
+BLANK_MIN_WIDTH = 26              # narrowest an answer blank may get before wrapping
+BLANK_ROW_HEIGHT = 22             # one wrapped row of answer blanks
 # -----------------------------------------------------------------------------
 
-CELLS_PER_PAGE = COLS * ROWS
 CAPTION_BLOCK = CAPTION_SIZE + 2
 PAGE_W, PAGE_H = PAGE_SIZE
+# a one row header is the baseline every page reserves, so boards stay the same
+# size whether or not the clue needed its blanks wrapped over several rows
+HEADER_BASE = TITLE_BLOCK + BLANK_ROW_HEIGHT
+
+
+def blank_layout(count):
+    """How many answer blanks fit on a row, and how many rows that takes."""
+    per_row = max(1, int((PAGE_W - 2 * MARGIN) // BLANK_MIN_WIDTH))
+    per_row = min(per_row, count)
+    rows = -(-count // per_row)        # ceiling division
+    return per_row, rows
+
+
+def header_height(count):
+    return TITLE_BLOCK + blank_layout(count)[1] * BLANK_ROW_HEIGHT
 
 
 def grid_metrics():
@@ -39,7 +54,7 @@ def grid_metrics():
     board instead of to the page is what keeps them nearly touching, rather than
     floating in the middle of a cell that is wider than it is tall.
     """
-    top = PAGE_H - MARGIN - HEADER_HEIGHT
+    top = PAGE_H - MARGIN - HEADER_BASE
     avail_w = PAGE_W - 2 * MARGIN - (COLS - 1) * GUTTER
     avail_h = top - MARGIN - ROWS * CAPTION_BLOCK - (ROWS - 1) * GUTTER
     board = min(avail_w / COLS, avail_h / ROWS)
@@ -79,7 +94,7 @@ def draw_svg(c, svg_text, box_x, box_y, box_w, box_h):
 
 
 def draw_header(c, puzzles):
-    """Title and a numbered blank per puzzle, drawn into the band on the first page."""
+    """Title, then a numbered blank per puzzle, wrapped over as many rows as it takes."""
     mate_text = "/".join(str(n) for n in sorted({p["mateNum"] for p in puzzles}))
     y = PAGE_H - MARGIN - 13
 
@@ -90,14 +105,14 @@ def draw_header(c, puzzles):
     c.drawString(MARGIN + 180, y, "Solve each board, read its letter off the key, "
                                   "write it in the blank with the same number.")
 
-    y -= 26
-    usable = PAGE_W - 2 * MARGIN
-    step = usable / float(max(len(puzzles), 1))
+    per_row, _ = blank_layout(len(puzzles))
+    step = (PAGE_W - 2 * MARGIN) / float(per_row)
     c.setFont(CAPTION_FONT, CAPTION_SIZE)
     for i in range(len(puzzles)):
-        x = MARGIN + i * step
-        c.line(x, y, x + step * 0.7, y)
-        c.drawString(x + step * 0.25, y - CAPTION_SIZE - 2, str(i + 1))
+        x = MARGIN + (i % per_row) * step
+        line_y = PAGE_H - MARGIN - TITLE_BLOCK - (i // per_row) * BLANK_ROW_HEIGHT - 9
+        c.line(x, line_y, x + step * 0.75, line_y)
+        c.drawString(x + step * 0.28, line_y - CAPTION_SIZE - 1, str(i + 1))
 
 
 def draw_caption(c, text, x, y, width):
@@ -139,14 +154,24 @@ def draw_pages(c, puzzles):
 
     side, left, top = grid_metrics()
     row_height = side + CAPTION_BLOCK + GUTTER
+
+    # a clue long enough to wrap its blanks eats into the first page's grid, so
+    # that page carries fewer rows of puzzles and the rest spill onto page two
+    first_top = PAGE_H - MARGIN - header_height(len(puzzles))
+    first_rows = max(1, int((first_top - MARGIN) // row_height))
+    first_cells = first_rows * COLS
+
     puzzle_number = 0
     page = 0
+    start = 0
 
-    for start in range(0, len(cells), CELLS_PER_PAGE):
+    while start < len(cells):
+        page_top = first_top if page == 0 else top
+        capacity = first_cells if page == 0 else ROWS * COLS
         if page == 0:
             draw_header(c, puzzles)
 
-        for slot, (kind, item) in enumerate(cells[start:start + CELLS_PER_PAGE]):
+        for slot, (kind, item) in enumerate(cells[start:start + capacity]):
             if kind == "puzzle":
                 puzzle_number += 1
             draw_cell(
@@ -155,11 +180,12 @@ def draw_pages(c, puzzles):
                 item,
                 puzzle_number,
                 left + (slot % COLS) * (side + GUTTER),
-                top - (slot // COLS) * row_height - CAPTION_BLOCK,
+                page_top - (slot // COLS) * row_height - CAPTION_BLOCK,
                 side,
             )
 
         c.showPage()
+        start += capacity
         page += 1
 
 
