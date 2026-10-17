@@ -173,7 +173,7 @@ public class RestControllers {
 	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
 	public ResponseEntity<byte[]> make(@PathVariable @Min(1) @Max(5) int mateNum,
 			@PathVariable @Pattern(regexp = "^(fm|lm)$") String moveType,
-			@Pattern(regexp = "^[a-z]{1,100}$") @PathVariable String rawClue) {
+			@Pattern(regexp = "^[a-zA-Z ]{1,100}$") @PathVariable String rawClue) {
 
 		log.info(String.format("This is make and I got mateNum:%s moveType:%s and clue:%s", mateNum, moveType, rawClue));
 
@@ -185,18 +185,21 @@ public class RestControllers {
 
 		
 		// TODO is this bad not use autowired?
-		String clue = rawClue.replace(" ", "").toLowerCase();
+		// spaces stay in the clue so the pdf can break the answer blanks into words,
+		// but a category or the word "random" is matched without them
+		String clue = rawClue.toLowerCase().trim();
+		String compact = clue.replace(" ", "");
 		StorageService storageService = new StorageService();
 		BoardService boardService = new BoardService();
 
-		if (clue.equalsIgnoreCase("random")){
+		if (compact.equalsIgnoreCase("random")){
 			log.info("Choosing random word");
 			clue= storageService.randomWord();
 		}
-		else if (storageService.categoryExists((clue))) {
+		else if (storageService.categoryExists((compact))) {
 			log.info("Back from categoryExists and it must be true");
-			log.info(String.format("Found %s using category %s",clue,rawClue));
-			clue = storageService.getCategoryWord(clue);
+			log.info(String.format("Found %s using category %s",compact,rawClue));
+			clue = storageService.getCategoryWord(compact);
 			log.info(String.format("Found %s using category %s",clue,rawClue));
 		}
 		else {
@@ -207,12 +210,18 @@ public class RestControllers {
 		
 		for (int i = 1; i <= clue.length(); i++) {
 			letter = String.valueOf(clue.charAt(i - 1));
+			if (letter.equals(" ")) {
+				// a marker the renderer turns into a gap between words, no board for it
+				jsonList.put(new JSONObject().put("space", true));
+				continue;
+			}
 			coordinate = boardService.getCoordinate(letter);
 			jsonObject = storageService.query(mateNum, moveType, coordinate);
 			jsonList.put(jsonObject);
 		}
 
-		return asPdf(boardService.drawBoard(jsonList), String.format("chess-puzzles-%s-mate%s-%s.pdf", clue, mateNum, moveType));
+		return asPdf(boardService.drawBoard(jsonList),
+				String.format("chess-puzzles-%s-mate%s-%s.pdf", clue.replace(" ", "-"), mateNum, moveType));
 
 	}
 

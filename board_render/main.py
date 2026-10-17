@@ -35,16 +35,49 @@ PAGE_W, PAGE_H = PAGE_SIZE
 HEADER_BASE = TITLE_BLOCK + BLANK_ROW_HEIGHT
 
 
-def blank_layout(count):
-    """How many answer blanks fit on a row, and how many rows that takes."""
+def blank_layout(entries):
+    """
+    Lay the answer blanks out in rows: one numbered blank per puzzle, a gap where
+    the clue had a space, and a wrap that keeps whole words together.
+    Returns the slots per row and the rows, each a list of numbers and gaps.
+    """
     per_row = max(1, int((PAGE_W - 2 * MARGIN) // BLANK_MIN_WIDTH))
-    per_row = min(per_row, count)
-    rows = -(-count // per_row)        # ceiling division
+
+    words = []
+    word = []
+    number = 0
+    for entry in entries:
+        if entry.get("space"):
+            if word:
+                words.append(word)
+                word = []
+        elif entry.get("fen") and entry.get("moves"):
+            number += 1
+            word.append(number)
+    if word:
+        words.append(word)
+
+    rows = []
+    row = []
+    for word in words:
+        if row and len(row) + 1 + len(word) > per_row:
+            rows.append(row)
+            row = []
+        if row:
+            row.append(None)           # the gap standing in for the space
+        for n in word:
+            if len(row) >= per_row:    # a single word longer than a row has to break
+                rows.append(row)
+                row = []
+            row.append(n)
+    if row:
+        rows.append(row)
+
     return per_row, rows
 
 
-def header_height(count):
-    return TITLE_BLOCK + blank_layout(count)[1] * BLANK_ROW_HEIGHT
+def header_height(entries):
+    return TITLE_BLOCK + len(blank_layout(entries)[1]) * BLANK_ROW_HEIGHT
 
 
 def grid_metrics():
@@ -93,7 +126,7 @@ def draw_svg(c, svg_text, box_x, box_y, box_w, box_h):
     )
 
 
-def draw_header(c, puzzles):
+def draw_header(c, entries, puzzles):
     """Title, then a numbered blank per puzzle, wrapped over as many rows as it takes."""
     mate_text = "/".join(str(n) for n in sorted({p["mateNum"] for p in puzzles}))
     y = PAGE_H - MARGIN - 13
@@ -105,14 +138,17 @@ def draw_header(c, puzzles):
     c.drawString(MARGIN + 180, y, "Solve each board, read its letter off the key, "
                                   "write it in the blank with the same number.")
 
-    per_row, _ = blank_layout(len(puzzles))
+    per_row, rows = blank_layout(entries)
     step = (PAGE_W - 2 * MARGIN) / float(per_row)
     c.setFont(CAPTION_FONT, CAPTION_SIZE)
-    for i in range(len(puzzles)):
-        x = MARGIN + (i % per_row) * step
-        line_y = PAGE_H - MARGIN - TITLE_BLOCK - (i // per_row) * BLANK_ROW_HEIGHT - 9
-        c.line(x, line_y, x + step * 0.75, line_y)
-        c.drawString(x + step * 0.28, line_y - CAPTION_SIZE - 1, str(i + 1))
+    for r, row in enumerate(rows):
+        line_y = PAGE_H - MARGIN - TITLE_BLOCK - r * BLANK_ROW_HEIGHT - 9
+        for col, number in enumerate(row):
+            if number is None:         # a space in the clue, leave the slot empty
+                continue
+            x = MARGIN + col * step
+            c.line(x, line_y, x + step * 0.75, line_y)
+            c.drawString(x + step * 0.28, line_y - CAPTION_SIZE - 1, str(number))
 
 
 def draw_caption(c, text, x, y, width):
@@ -147,7 +183,7 @@ def draw_cell(c, kind, item, number, x, board_top, side):
     )
 
 
-def draw_pages(c, puzzles):
+def draw_pages(c, entries, puzzles):
     # the key rides along as the first cell rather than taking a page of its own
     cells = [("key", None)] if os.path.exists(KEY_IMAGE) else []
     cells += [("puzzle", p) for p in puzzles]
@@ -157,7 +193,7 @@ def draw_pages(c, puzzles):
 
     # a clue long enough to wrap its blanks eats into the first page's grid, so
     # that page carries fewer rows of puzzles and the rest spill onto page two
-    first_top = PAGE_H - MARGIN - header_height(len(puzzles))
+    first_top = PAGE_H - MARGIN - header_height(entries)
     first_rows = max(1, int((first_top - MARGIN) // row_height))
     first_cells = first_rows * COLS
 
@@ -169,7 +205,7 @@ def draw_pages(c, puzzles):
         page_top = first_top if page == 0 else top
         capacity = first_cells if page == 0 else ROWS * COLS
         if page == 0:
-            draw_header(c, puzzles)
+            draw_header(c, entries, puzzles)
 
         for slot, (kind, item) in enumerate(cells[start:start + capacity]):
             if kind == "puzzle":
@@ -200,7 +236,7 @@ def main():
 
     c = canvas.Canvas(out_path, pagesize=PAGE_SIZE)
     c.setTitle("Chess Puzzles")
-    draw_pages(c, puzzles)
+    draw_pages(c, data, puzzles)
 
     # keep the sheet count whole so a stack duplexes without bleeding into the next copy
     if c.getPageNumber() % 2 == 0:
