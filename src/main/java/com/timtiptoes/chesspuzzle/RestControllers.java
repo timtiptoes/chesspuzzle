@@ -6,6 +6,7 @@ import com.timtiptoes.services.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.core.io.InputStreamResource;
@@ -41,9 +42,9 @@ Puzzle lookup — For each coordinate, StorageService.query(mateNum, moveType, c
 
 doit.sh generation — BoardService.drawBoard() writes a shell script (board_render/doit.sh) that runs the Docker container, passing the full JSON array of all puzzles as a single argument.
 
-Docker execution — The Java process executes doit.sh directly via Runtime.getRuntime().exec(), reads stdout line by line, and returns it as the HTTP response body.
+Docker execution — The Java process executes doit.sh directly via Runtime.getRuntime().exec() and waits for it; stdout carries the name of the PDF that was written, stderr is logged if the render fails.
 
-Output — The Docker container renders the board positions and writes SVG (or similar) to stdout, which gets returned as the response.
+Output — The Docker container draws the boards into a PDF in the render directory. BoardService reads that file, deletes it, and the controller returns the bytes as application/pdf, so the browser shows a printable, downloadable document that duplexes front to back. The layout knobs (boards per page, paper size, margins) are constants at the top of main.py.
 
 board_key.png — bundled in the jar AND read from it via ClassPathResource. No scp needed, works automatically.
 
@@ -80,7 +81,7 @@ To build
 	./gradlew bootJar
 
 Visit
-	http://localhost:8081/make/2/random
+	http://localhost:8081/make/2/fm/hello
 
 
 To deploy to tx2
@@ -153,8 +154,8 @@ public class RestControllers {
 
 	}
 
-	@RequestMapping(value = "/drawit/{mateNum}/{lastMove}", method = RequestMethod.GET)
-	public String drawIt(@PathVariable @Min(1) @Max(5) int mateNum,
+	@RequestMapping(value = "/drawit/{mateNum}/{lastMove}", method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
+	public ResponseEntity<byte[]> drawIt(@PathVariable @Min(1) @Max(5) int mateNum,
 			@PathVariable @Pattern(regexp = "^[a-h][1-8]$") String lastMove) {
 
 		log.info(String.format("This is drawit and I got mateNum:%s and lastMove:%s", mateNum, lastMove));
@@ -165,12 +166,12 @@ public class RestControllers {
 		JSONArray jsonList = new JSONArray();
 		jsonList.put(jsonObject);
 		BoardService boardService = new BoardService();
-		return boardService.drawBoard(jsonList);
+		return asPdf(boardService.drawBoard(jsonList), String.format("chess-puzzle-mate%s-%s.pdf", mateNum, lastMove));
 
 	}
 
-	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET)
-	public String make(@PathVariable @Min(1) @Max(5) int mateNum,
+	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
+	public ResponseEntity<byte[]> make(@PathVariable @Min(1) @Max(5) int mateNum,
 			@PathVariable @Pattern(regexp = "^(fm|lm)$") String moveType,
 			@Pattern(regexp = "^[a-z]{1,21}$") @PathVariable String rawClue) {
 
@@ -211,8 +212,20 @@ public class RestControllers {
 			jsonList.put(jsonObject);
 		}
 
-		return boardService.drawBoard(jsonList);
+		return asPdf(boardService.drawBoard(jsonList), String.format("chess-puzzles-%s-mate%s-%s.pdf", clue, mateNum, moveType));
 
+	}
+
+	/**
+	 * inline so the browser shows the puzzles straight away, with its own save and
+	 * print buttons a click away. Swap inline for attachment to force a download.
+	 */
+	private ResponseEntity<byte[]> asPdf(byte[] pdf, String filename) {
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+				.contentLength(pdf.length)
+				.body(pdf);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)

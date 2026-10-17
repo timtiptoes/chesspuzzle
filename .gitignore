@@ -73,3 +73,5 @@ src/test/java/.DS_Store
 src/test/java/com/.DS_Store
 src/test/java/com/timtiptoes/.DS_Store
  
+board_render/board_key.png
+board_render/*.pdf
