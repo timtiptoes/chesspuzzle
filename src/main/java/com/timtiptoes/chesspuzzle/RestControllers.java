@@ -121,6 +121,9 @@ To deploy to tx2
 public class RestControllers {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+	/** Punctuation a clue may carry; it shows up in the answer blanks, not as a puzzle. */
+	private static final String PUNCTUATION = ".,:!?";
+
 	@RequestMapping(value = "/hello/{name}", method = RequestMethod.GET)
 	public String helloWorld(@PathVariable(value = "name") String name) {
 		return "Hello World," + name + " from Spring Boot";
@@ -173,7 +176,7 @@ public class RestControllers {
 	@RequestMapping(value = "/make/{mateNum}/{moveType}/{rawClue}", method = RequestMethod.GET, produces = MediaType.APPLICATION_PDF_VALUE)
 	public ResponseEntity<byte[]> make(@PathVariable @Min(1) @Max(5) int mateNum,
 			@PathVariable @Pattern(regexp = "^(fm|lm)$") String moveType,
-			@Pattern(regexp = "^[a-zA-Z ]{1,100}$") @PathVariable String rawClue) {
+			@Pattern(regexp = "^[a-zA-Z .,:!?]{1,100}$") @PathVariable String rawClue) {
 
 		log.info(String.format("This is make and I got mateNum:%s moveType:%s and clue:%s", mateNum, moveType, rawClue));
 
@@ -185,10 +188,10 @@ public class RestControllers {
 
 		
 		// TODO is this bad not use autowired?
-		// spaces stay in the clue so the pdf can break the answer blanks into words,
-		// but a category or the word "random" is matched without them
+		// spaces and punctuation stay in the clue so the pdf can lay the answer
+		// blanks out as words, but a category or "random" is matched on letters only
 		String clue = rawClue.toLowerCase().trim();
-		String compact = clue.replace(" ", "");
+		String compact = clue.replaceAll("[^a-z]", "");
 		StorageService storageService = new StorageService();
 		BoardService boardService = new BoardService();
 
@@ -215,13 +218,19 @@ public class RestControllers {
 				jsonList.put(new JSONObject().put("space", true));
 				continue;
 			}
+			if (PUNCTUATION.contains(letter)) {
+				// drawn as itself next to the blank it follows, no board for it either
+				jsonList.put(new JSONObject().put("punct", letter));
+				continue;
+			}
 			coordinate = boardService.getCoordinate(letter);
 			jsonObject = storageService.query(mateNum, moveType, coordinate);
 			jsonList.put(jsonObject);
 		}
 
+		String name = clue.replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
 		return asPdf(boardService.drawBoard(jsonList),
-				String.format("chess-puzzles-%s-mate%s-%s.pdf", clue.replace(" ", "-"), mateNum, moveType));
+				String.format("chess-puzzles-%s-mate%s-%s.pdf", name, mateNum, moveType));
 
 	}
 

@@ -30,6 +30,7 @@ BLANK_ROW_HEIGHT = 22             # one wrapped row of answer blanks
 
 CAPTION_BLOCK = CAPTION_SIZE + 2
 PAGE_W, PAGE_H = PAGE_SIZE
+GAP = (None, "")                  # a slot holding neither a blank nor punctuation
 # a one row header is the baseline every page reserves, so boards stay the same
 # size whether or not the clue needed its blanks wrapped over several rows
 HEADER_BASE = TITLE_BLOCK + BLANK_ROW_HEIGHT
@@ -37,9 +38,9 @@ HEADER_BASE = TITLE_BLOCK + BLANK_ROW_HEIGHT
 
 def blank_layout(entries):
     """
-    Lay the answer blanks out in rows: one numbered blank per puzzle, a gap where
-    the clue had a space, and a wrap that keeps whole words together.
-    Returns the slots per row and the rows, each a list of numbers and gaps.
+    Lay the answer blanks out in rows. Every slot is (number, trailing text):
+    a puzzle gives a numbered blank, punctuation rides along after the blank it
+    follows, and a space ends the word. Words wrap whole wherever they fit.
     """
     per_row = max(1, int((PAGE_W - 2 * MARGIN) // BLANK_MIN_WIDTH))
 
@@ -51,9 +52,15 @@ def blank_layout(entries):
             if word:
                 words.append(word)
                 word = []
+        elif entry.get("punct"):
+            if word:
+                # hang it off the previous blank so it reads as part of the word
+                word[-1] = (word[-1][0], word[-1][1] + entry["punct"])
+            else:
+                word.append((None, entry["punct"]))
         elif entry.get("fen") and entry.get("moves"):
             number += 1
-            word.append(number)
+            word.append((number, ""))
     if word:
         words.append(word)
 
@@ -64,12 +71,12 @@ def blank_layout(entries):
             rows.append(row)
             row = []
         if row:
-            row.append(None)           # the gap standing in for the space
-        for n in word:
+            row.append(GAP)            # the gap standing in for the space
+        for slot in word:
             if len(row) >= per_row:    # a single word longer than a row has to break
                 rows.append(row)
                 row = []
-            row.append(n)
+            row.append(slot)
     if row:
         rows.append(row)
 
@@ -140,15 +147,18 @@ def draw_header(c, entries, puzzles):
 
     per_row, rows = blank_layout(entries)
     step = (PAGE_W - 2 * MARGIN) / float(per_row)
-    c.setFont(CAPTION_FONT, CAPTION_SIZE)
     for r, row in enumerate(rows):
         line_y = PAGE_H - MARGIN - TITLE_BLOCK - r * BLANK_ROW_HEIGHT - 9
-        for col, number in enumerate(row):
-            if number is None:         # a space in the clue, leave the slot empty
-                continue
+        for col, (number, trailing) in enumerate(row):
             x = MARGIN + col * step
-            c.line(x, line_y, x + step * 0.75, line_y)
-            c.drawString(x + step * 0.28, line_y - CAPTION_SIZE - 1, str(number))
+            if number is not None:
+                c.setFont(CAPTION_FONT, CAPTION_SIZE)
+                c.line(x, line_y, x + step * 0.75, line_y)
+                c.drawString(x + step * 0.28, line_y - CAPTION_SIZE - 1, str(number))
+            if trailing:
+                # sits in the space after the blank, on the writing line
+                c.setFont(CAPTION_FONT, CAPTION_SIZE + 2)
+                c.drawString(x + step * 0.78 if number is not None else x, line_y, trailing)
 
 
 def draw_caption(c, text, x, y, width):
