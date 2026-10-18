@@ -204,7 +204,10 @@ def draw_pages(c, entries, puzzles):
     # a clue long enough to wrap its blanks eats into the first page's grid, so
     # that page carries fewer rows of puzzles and the rest spill onto page two
     first_top = PAGE_H - MARGIN - header_height(entries)
-    first_rows = max(1, int((first_top - MARGIN) // row_height))
+    # n rows take n * row_height minus the gutter the last row does not need, so a
+    # one line header still leaves room for the full ROWS of puzzles
+    first_rows = int((first_top - MARGIN + GUTTER + 0.01) // row_height)
+    first_rows = max(1, min(ROWS, first_rows))
     first_cells = first_rows * COLS
 
     puzzle_number = 0
