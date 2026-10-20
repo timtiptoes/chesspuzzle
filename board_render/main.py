@@ -143,7 +143,8 @@ def draw_header(c, entries, puzzles):
 
     c.setFont(CAPTION_FONT, 9)
     c.drawString(MARGIN + 180, y, "Solve each board, read its letter off the key, "
-                                  "write it in the blank with the same number.")
+                                  "write it in the blank with the same number."
+                                  "   Play it out: https://lichess.org/training/<id>")
 
     per_row, rows = blank_layout(entries)
     step = (PAGE_W - 2 * MARGIN) / float(per_row)
