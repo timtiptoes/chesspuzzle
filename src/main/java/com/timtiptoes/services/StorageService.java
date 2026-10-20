@@ -106,6 +106,33 @@ public class StorageService {
 		throw new IllegalArgumentException("moveType must be " + FIRST_MOVE + " or " + LAST_MOVE + ", got:" + moveType);
 	}
 
+	/**
+	 * How a category is titled on the puzzle sheet, e.g. battles is "a famous
+	 * battle". Null when the category has no row in the categories table.
+	 */
+	public String getCategoryDisplayName(String category) {
+
+		String displayName = null;
+
+		try {
+			Connection conn = this.connect();
+			String sql = "SELECT display_name FROM categories WHERE url_name = ? LIMIT 1;";
+			PreparedStatement pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, category);
+			log.info(String.format("About to execute:%s with url_name:%s", sql, category));
+
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				displayName = rs.getString("display_name");
+			}
+		}
+
+		catch (Exception e) {
+			log.debug(e.toString());
+		}
+		return displayName;
+	}
+
 	public String randomWord() {
 		Connection conn = null;
 		ResultSet rs = null;

@@ -23,6 +23,7 @@ GUTTER = 3                        # points between boards, they sit almost edge 
 CAPTION_FONT = "Helvetica"
 CAPTION_SIZE = 8
 KEY_IMAGE = "board_key.png"       # dropped into the mounted dir by BoardService
+TITLE_SIZE = 14                   # starting size; shrinks to fit a long category name
 TITLE_BLOCK = 30                  # title line above the answer blanks
 BLANK_MIN_WIDTH = 26              # narrowest an answer blank may get before wrapping
 BLANK_ROW_HEIGHT = 22             # one wrapped row of answer blanks
@@ -133,18 +134,44 @@ def draw_svg(c, svg_text, box_x, box_y, box_w, box_h):
     )
 
 
+def title_for(entries):
+    """
+    A clue drawn from a category is titled with that category's display name from
+    the database, e.g. "A famous battle". Anything else is just chess puzzles.
+    """
+    for entry in entries:
+        if entry.get("category"):
+            name = entry["category"]
+            return name[:1].upper() + name[1:]
+    return "Chess Puzzles"
+
+
 def draw_header(c, entries, puzzles):
     """Title, then a numbered blank per puzzle, wrapped over as many rows as it takes."""
     mate_text = "/".join(str(n) for n in sorted({p["mateNum"] for p in puzzles}))
     y = PAGE_H - MARGIN - 13
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(MARGIN, y, "Chess Puzzles - mate in {}".format(mate_text))
+    title = "{} - mate in {}".format(title_for(entries), mate_text)
+    instruction = ("Solve each board, read its letter off the key, "
+                   "write it in the blank with the same number."
+                   "   Play it out: https://lichess.org/training/<id>")
 
-    c.setFont(CAPTION_FONT, 9)
-    c.drawString(MARGIN + 180, y, "Solve each board, read its letter off the key, "
-                                  "write it in the blank with the same number."
-                                  "   Play it out: https://lichess.org/training/<id>")
+    # a long display name shrinks the title rather than crowding the instruction
+    title_size = TITLE_SIZE
+    while title_size > 9 and (c.stringWidth(title, "Helvetica-Bold", title_size) + 12
+                              + c.stringWidth(instruction, CAPTION_FONT, 9)) > PAGE_W - 2 * MARGIN:
+        title_size -= 0.5
+    c.setFont("Helvetica-Bold", title_size)
+    c.drawString(MARGIN, y, title)
+
+    # the instruction follows whatever width the title turned out to be, and gives
+    # up font size itself if even the smallest title leaves it short of room
+    x = MARGIN + c.stringWidth(title, "Helvetica-Bold", title_size) + 12
+    size = 9
+    while size > 5 and x + c.stringWidth(instruction, CAPTION_FONT, size) > PAGE_W - MARGIN:
+        size -= 0.25
+    c.setFont(CAPTION_FONT, size)
+    c.drawString(x, y, instruction)
 
     per_row, rows = blank_layout(entries)
     step = (PAGE_W - 2 * MARGIN) / float(per_row)

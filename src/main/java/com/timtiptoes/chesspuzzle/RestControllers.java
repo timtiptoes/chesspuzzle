@@ -34,7 +34,7 @@ Here's the general idea
 
 The full flow for /make/2/lm/random:
 
-Word selection — StorageService.randomWord() queries the words table in lichessDB.db for a random word longer than 6 characters. If you pass a category name instead of "random" (e.g. /make/2/lm/animals), it checks categoryExists() first and pulls a word from that category instead.
+Word selection — a clue that names a category in the words table (notables, random, artists, musicalgroups, battles, biblicalplaces) is replaced by a random word longer than 6 characters drawn from that category, and the sheet is titled with the category name. "random" is one of those categories, not a special case. Anything else is used as the clue itself.
 
 Letter → coordinate mapping — For each letter in the word, BoardService.getCoordinate(letter) picks a random chess square (e.g. a1–h8) that maps to that letter. The mapping is mathematical: a board has 64 squares, each square maps to one of 26 letters via (x + 8*y) % 26. Multiple squares can map to the same letter, so it picks one randomly from the matching squares.
 
@@ -183,6 +183,7 @@ public class RestControllers {
 		String FEN = "";
 		String letter;
 		String coordinate;
+		String category = null;
 		JSONObject jsonObject = new JSONObject();
 		JSONArray jsonList = new JSONArray();
 
@@ -195,14 +196,11 @@ public class RestControllers {
 		StorageService storageService = new StorageService();
 		BoardService boardService = new BoardService();
 
-		if (compact.equalsIgnoreCase("random")){
-			log.info("Choosing random word");
-			clue= storageService.randomWord();
-		}
-		else if (storageService.categoryExists((compact))) {
+		if (storageService.categoryExists((compact))) {
 			log.info("Back from categoryExists and it must be true");
 			log.info(String.format("Found %s using category %s",compact,rawClue));
 			clue = storageService.getCategoryWord(compact);
+			category = compact;
 			log.info(String.format("Found %s using category %s",clue,rawClue));
 		}
 		else {
@@ -210,6 +208,12 @@ public class RestControllers {
 		}
 
 		log.info(String.format("About to make puzzle with %s",clue));
+
+		if (category != null) {
+			// the renderer titles the sheet with this instead of "Chess Puzzles"
+			String displayName = storageService.getCategoryDisplayName(category);
+			jsonList.put(new JSONObject().put("category", displayName != null ? displayName : category));
+		}
 		
 		for (int i = 1; i <= clue.length(); i++) {
 			letter = String.valueOf(clue.charAt(i - 1));
